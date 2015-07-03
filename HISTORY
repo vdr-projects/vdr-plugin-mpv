@@ -1,0 +1,82 @@
+2015-06-29: vdr-mpv-0.0.4
+- start playback even when audio or video fails, this should give a better
+  user feedback to see what's configured wrong
+- use VDR volume control if passthrough is disabled
+- add support for playlists, by default the file endings m3u, ini, pls, txt,
+  playlist are passed as a playlist, this can be adjusted by the new argument x
+- stereo downmix support, this can be enabled in the setup menu
+- workaround for open osd during shutdown
+- navigating through playlist using the remote control keys 7 and 9
+  7 to select the previous playlist item, 9 to select the next
+- the osd file in /tmp is removed when osd is closed, this should also fix
+  unclean osd display while using the audio/subtitle menus
+- added a setup option to choose between chapter and playlist navigation on
+  prev/next keys
+- added a setup option to use the next/prev keys for chapter navigation and
+  if the file has no chapters use them for playlist navigation. this option
+  is turned on by default
+- use pause property of mpv for detecting if player is paused
+- use speed property of mpv for detecting current player speed
+- if the file contains named chapters they are now displayed on replay info
+- added option to display the title from the meta data instead of the filename
+  you have to enable this in the setup menu
+- readd MsgReplaying which was lost somewhere during cleanup
+- added shuffle function for playlist, if the playlist ist started with OK
+  it's played in normal order, if the playback is started with yellow shuffle
+  is active
+- the service function Mpv_PlaylistShuffle can be used by other plugins to start
+  a playlist in shuffle mode (see filebrowser.c for an example)
+- added a first german translation
+
+2015-06-22: vdr-mpv 0.0.3
+- FastFwd and FastRwd (Rewind only jumps back 10 seconds, since mpv has no rewind)
+- Audio passthrough is now configurable in the plugin setup menu
+- Primary device isn't switched anymore when playback is started, on playback stop
+  the device is still switched (to the current one) to recreate the normal osd
+  provider
+- fix osd display when skindesigner is used
+- the shared memory is now mapped using mmap
+- if mpv isn't able to start the player is closed after a 5 seconds timeout
+- vo and hwdec can now be set as an argument, now other vo/hwdec than vdpau are
+  supported. vdpau is choosen as default
+- 3D osd svdrp commands removed, since they didn't worked. If you need this
+  please give me a feature request and I will try to implement them again
+- chapters are now displayed as "recording" marks in the replay info
+- the vdr audio menu is now used to select different audio tracks if available
+- the vdr subtitle menu is now used to select different subtitles if available
+- Back key is now doing the same like stop and blue if disdcnav is not active
+- default audio and subtitle language can now be set as an argument (-l)
+- the new svdrp command play can be used to start playing a file
+- time search is now available using the red remote control key, it works
+  the same way like the VDR implementation (in fact most of the code is 
+  copied from VDR and adjusted slightly for this function)
+- cleaned up service interface and rename it to mpv, this was a left 
+  over from the initial fork
+- renamed some of the arguments, the old ones are not longer valid.
+  Please see the README for the new names
+
+2015-06-09: vdr-mpv 0.0.2
+- use pkg-config to check if libmpv is available
+- set alsa default as audio default value
+- use old dts-hd parameter again for backwards compatiblity
+- create osd file readable
+- generic osd size support
+
+2015-06-08: vdr-mpv 0.0.1
+- Forked under the new name mpv
+- Replaced mplayer by libmpv
+- Added OSD support using libmpv API
+- Several OSD improvments
+- Switch to video framerate (if xrandr extension is available)
+- DTS-HD passthrough
+
+2013-09-05: vdr-play
+- Add replay info.
+
+2013-08-26: vdr-play
+
+- Allow filenames starting with '-'.
+- Add dia show image/picture viewer.
+- Add player thread for events and pipe output.
+- Support DVDNAV buttons.
+- Colorkey becomes parameter (f.e. mplayer2).

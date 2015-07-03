@@ -1,0 +1,63 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: vdr-mpv 0.0.3\n"
+"Report-Msgid-Bugs-To: <see README>\n"
+"POT-Creation-Date: 2015-06-29 22:14+0200\n"
+"PO-Revision-Date: 2015-06-29 22:14+0200\n"
+"Last-Translator: Maniac\n"
+"Language-Team: Maniac\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. TRANSLATORS: note the trailing blank!
+msgid "Jump: "
+msgstr ""
+
+msgid "mpv player plugin"
+msgstr ""
+
+msgid "MPV"
+msgstr ""
+
+msgid "Browse"
+msgstr ""
+
+msgid "Play optical disc"
+msgstr ""
+
+msgid "Play audio CD"
+msgstr "Audio CD"
+
+msgid "Play video DVD"
+msgstr "DVD"
+
+msgid "Function not working yet, use 3 or 4"
+msgstr ""
+
+msgid "Hide main menu entry"
+msgstr "Hauptmenüeintrag verstecken"
+
+msgid "Audio Passthrough"
+msgstr ""
+
+msgid "DTS-HD Passthrough"
+msgstr ""
+
+msgid "Enable stereo downmix"
+msgstr "Aktiviere Stereo downmix"
+
+msgid "Use prev/next keys for playlist control"
+msgstr "Weiter/Zurüc zum steuern der Playlist"
+
+msgid "Control playlist if no chapters in file"
+msgstr "Steuere die Playlist wenn keine Kapitel vorhanden"
+
+msgid "Show media title instead of filename"
+msgstr "Media Titel anstatt des Dateinamen anzeigen"

@@ -1,0 +1,34 @@
+//////////////////////////////////////////////////////////////////////////////
+///                                                                        ///
+/// This file is part of the VDR mpv plugin and licensed under AGPLv3      ///
+///                                                                        ///
+/// See the README file for copyright information                          ///
+///                                                                        ///
+//////////////////////////////////////////////////////////////////////////////
+
+#ifndef __MPV_SETUP_H
+#define __MPV_SETUP_H
+
+#include <vdr/plugin.h>
+
+class cMpvPluginSetup:public cMenuSetupPage
+{
+  private:
+    void Setup();
+    virtual void Store();
+
+    int SetupHideMainMenuEntry;
+    int SetupUsePassthrough;
+    int SetupUseDtsHdPassthrough;
+    int SetupStereoDownmix;
+    int SetupPlaylistOnNextKey;
+    int SetupPlaylistIfNoChapters;
+    int SetupShowMediaTitle;
+
+  public:
+    cMpvPluginSetup();
+    virtual eOSState ProcessKey(eKeys);
+};
+
+#endif
+

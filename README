@@ -1,0 +1,132 @@
+This is a "plugin" for the Video Disk Recorder (VDR).
+
+Copyright (c) 2012, 2013 by Johns.  All Rights Reserved.
+Copyright (c) 2013 - 2015 by Maniac.  All Rights Reserved.
+
+License: AGPLv3
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+Description
+-----------
+
+vdr-mpv is a fork of the vdr-play plugin from Johns. It uses libmpv for playing
+media in VDR and also displays the VDR OSD (On Screen Display) during playback.
+
+Requirements
+------------
+
+- VDR version >= 2.2.0 (earlier versions may work, but are untested)
+- libmpv >= 0.8.0 (earlier versions may work, but are untested)
+- xrandr (only needed for modeline switching)
+
+Installation
+------------
+
+- extract the plugin archive and change to the folder
+- using "make install" the plugin will be compiled and installed on your system
+- adjust the command line arguments to fit your needs
+
+Command line arguments
+----------------------
+
+-a audio
+  mpv --ao (Default: alsa:device=default)
+  The audio out device which is used by mpv, this is directly passed as ao to mpv.
+
+-v video
+  mpv --vo (Default: vdpau)
+  The video out device which is used by mpv, this is directly passed as vo to mpv.
+
+-h hwdec
+  mpv --hwdec-codecs (Default: vdpau)
+  The hwdec-codecs which are used by mpv, this is directly passed as hwdec-codecs
+  to mpv.
+
+-d device
+  optical disc device (Default: /dev/dvd)
+  The device which is used for playback of optical media
+
+-l languages
+  languages for audio and subtitles (Default: deu,de,ger,eng,en)"
+  The default languages choosen for audio and subtitles. Please note since different
+  container formats are using different standards you should pass this at least in
+  ISO-639-1 (two letters) and 639-2 (three letters). The list is seperated by comma.
+  This will is passed as alang and slang to mpv.
+
+-b /dir
+  file browser root directory
+
+-r
+  switch modeline to refresh rate of played file
+  xrandr is needed for this to work. If no xrandr is detected during compile time
+  this feature will be deactivated.
+
+Plugin setup options
+--------------------
+
+- Hide main menu entry
+  Don't show the filebrowser in VDR main menu
+
+- Audio passthrough
+  Passthrough digital audio (like AC3, DTS) formats without decoding them
+  If passthrough is disabled the VDR volume control is used 
+
+- DTS-HD passthrough
+  Passthrough DTS-HD audio, this is only selectable if general passtrough is enabled
+
+- Enable stereo downmix
+  Downmix audio to stereo, this is only selectable if passthrough is disabled
+
+- Use prev/next keys for playlist control
+  If activated the next and previous keys are used for playlist navigation,
+  the keys 7 and 9 are then used for chapter navigation
+
+- Control playlist if no chapters in file
+  If a file without chapters is played use the prev/next keys for playlist control
+
+Remote control keys
+-------------------
+
+The following remote keys are supported in normal operation (no disc menu active)
+
+Play, Up:               Continue playback if paused
+Down, Pause:            Pause playback
+Fast rewind:            Seek 10 seconds backwards (fast rew is not supported by mpv)
+Fast forward:           Speed up playback speed up to 32 times
+Red:                    Time search functionality like used in VDR recordings
+Green:                  Seek 60 seconds backwards
+Yellow:                 Seek 60 seconds forward
+Blue, Stop, Back:       Stop playback
+Ok:                     Display current playback status or close status display
+                        if currently open
+5:                      Open disc nav menu
+7:                      Previous playlist item
+9:                      Next playlist item
+Next:                   Next chapter
+Previous:               Previous chapter
+Audio:                  Display a menu to switch between the available audio
+                        tracks
+Subtitles:              Display a menu to switch between the available subtitle
+                        tracks
+
+If a disc menu is active the following keys loose their default function described
+above and gain the following function
+
+Up, Down, Left, Right:  Navigate through the disc menu
+Ok:                     Select the currently highlighted entry in the disc menu
+Back:                   Back in the disc nav menu
+
+SVDRP commands
+--------------
+
+PLAY filename           play given filename
+

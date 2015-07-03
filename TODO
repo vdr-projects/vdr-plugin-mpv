@@ -1,0 +1,11 @@
+mpv issues:
+ - subtitle forced flag is ignored with mkv -> https://github.com/mpv-player/mpv/issues/2032
+ - ff while passthrough is active does not work because mpv tries to add resample filter which fails 
+
+Known issues:
+
+Feature requests:
+ - resume
+
+Todo:
+
