@@ -70,6 +70,9 @@ Command line arguments
   xrandr is needed for this to work. If no xrandr is detected during compile time
   this feature will be deactivated.
 
+-m text
+  the text displayed in VDR main menu (Default: MPV)
+
 Plugin setup options
 --------------------
 

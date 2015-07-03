@@ -26,7 +26,6 @@ static const char *VERSION = "0.0.4"
 using std::string;
 
 static const char *DESCRIPTION = trNOOP("mpv player plugin");
-static const char *MAINMENUENTRY = trNOOP("MPV");
 
 class cMpvPlugin:public cPlugin
 {
@@ -44,7 +43,7 @@ class cMpvPlugin:public cPlugin
     virtual bool ProcessArgs(int argc, char *argv[]) { return MpvPluginConfig->ProcessArgs(argc, argv); }
     virtual bool Initialize(void) { return true; }
     virtual void MainThreadHook(void) {}
-    virtual const char *MainMenuEntry(void) { return MpvPluginConfig->HideMainMenuEntry ? NULL : tr(MAINMENUENTRY); }
+    virtual const char *MainMenuEntry(void) { return MpvPluginConfig->HideMainMenuEntry ? NULL : MpvPluginConfig->MainMenuEntry.c_str(); }
     virtual cOsdObject *MainMenuAction(void);
     virtual cMenuSetupPage *SetupMenu(void) { return new cMpvPluginSetup; }
     virtual bool SetupParse(const char *Name, const char *Value) { return MpvPluginConfig->SetupParse(Name, Value); }

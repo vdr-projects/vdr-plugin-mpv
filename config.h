@@ -47,6 +47,7 @@ class cMpvPluginConfig
     string DiscDevice;              // optical disc device
     string Languages;               // language string for audio and subtitle TODO move to Setup menu
     vector<string> PlaylistExtensions; // file extensions which are recognized as a playlist
+    string MainMenuEntry;           // the text displayed in VDR main menu
 
     string X11Display;              // X11 display used for mpv
     string TitleOverride;           // title to display (ovveride used via service interface)

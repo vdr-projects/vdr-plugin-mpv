@@ -1,3 +1,6 @@
+2015-XX-XX vdr-mpv-0.0.5
+- added argument to override the main menu text
+
 2015-06-29: vdr-mpv-0.0.4
 - start playback even when audio or video fails, this should give a better
   user feedback to see what's configured wrong

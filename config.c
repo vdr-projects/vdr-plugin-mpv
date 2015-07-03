@@ -31,6 +31,7 @@ cMpvPluginConfig::cMpvPluginConfig()
   DiscDevice = "/dev/dvd";
   Languages = "deu,de,ger,eng,en";
   PlayListExtString = "m3u,ini,pls,txt,playlist";
+  MainMenuEntry = "MPV";
 
   X11Display = ":0.0";
 }
@@ -61,7 +62,7 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
 
   for (;;)
   {
-    switch (getopt(argc, argv, "a:v:h:d:b:l:x:r"))
+    switch (getopt(argc, argv, "a:v:h:d:b:l:x:rm:"))
     {
       case 'a': // audio out
         AudioOut = optarg;
@@ -86,6 +87,9 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
       continue;
       case 'r': // refresh rate
         RefreshRate = 1;
+      continue;
+      case 'm':
+        MainMenuEntry = optarg;
       continue;
       case EOF:
       break;
@@ -123,6 +127,7 @@ const char *cMpvPluginConfig::CommandLineHelp(void)
 #ifdef USE_XRANDR
     "  -r\t\tswitch modeline to refresh rate of played file\n"
 #endif
+    "  -m text\ttext displayed in VDR main menu (Default: MPV)\n"
     ;
 }
 
