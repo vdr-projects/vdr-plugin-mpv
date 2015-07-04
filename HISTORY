@@ -1,5 +1,7 @@
 2015-XX-XX vdr-mpv-0.0.5
 - added argument to override the main menu text
+- during playback show an option menu if the main menu entry is selected
+  or key blue is pressed
 
 2015-06-29: vdr-mpv-0.0.4
 - start playback even when audio or video fails, this should give a better

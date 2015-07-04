@@ -32,6 +32,7 @@ using std::vector;
 #define MPV_OBSERVE_MEDIA_TITLE 10
 
 volatile int cMpvPlayer::running = 0;
+cMpvPlayer *cMpvPlayer::PlayerHandle = NULL;
 
 // check mpv errors and send them to log
 static inline void check_error(int status)
@@ -128,6 +129,7 @@ void *cMpvPlayer::ObserverThread(void *handle)
 cMpvPlayer::cMpvPlayer(string Filename, bool Shuffle)
 :cPlayer(pmExtern_THIS_SHOULD_BE_AVOIDED)
 {
+  PlayerHandle = this;
   PlayFilename = Filename;
   PlayShuffle = Shuffle;
   running = 0;
@@ -138,6 +140,7 @@ cMpvPlayer::~cMpvPlayer()
 {
   dsyslog("[mpv]%s: end\n", __FUNCTION__);
   Detach();
+  PlayerHandle = NULL;
 }
 
 void cMpvPlayer::Activate(bool on)
@@ -507,6 +510,11 @@ void cMpvPlayer::SetAudio(int Audio)
 void cMpvPlayer::SetSubtitle(int Subtitle)
 {
   SendCommand("set sub %d\n", Subtitle);
+}
+
+void cMpvPlayer::SetChapter(int Chapter)
+{
+  SendCommand("set chapter %d\n", Chapter-1);
 }
 
 void cMpvPlayer::TogglePause()

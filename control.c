@@ -204,6 +204,10 @@ eOSState cMpvControl::ProcessKey(eKeys key)
       Player->Seek(+60);
     break;
 
+    case kBlue:
+      cRemote::CallPlugin("mpv");
+    break;
+
     case kBack:
       if (Player->DiscNavActive())
       {
@@ -211,7 +215,6 @@ eOSState cMpvControl::ProcessKey(eKeys key)
         break;
       }
     case kStop:
-    case kBlue:
       Hide();
       Player->QuitPlayer();
       return osEnd;

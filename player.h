@@ -47,6 +47,7 @@ class cMpvPlayer:public cPlayer
     vector<int> PlayerChapters;       // chapter start times
     vector<string> ChapterTitles;     // chapter titles
     string mediaTitle;                // title from meta data
+    static cMpvPlayer *PlayerHandle;  // our player
     static volatile int running;
 
   public:
@@ -59,6 +60,7 @@ class cMpvPlayer:public cPlayer
     void OsdClose();                              // clear or close current OSD
     void Shutdown();
     static volatile int PlayerIsRunning() { return running; }
+    static cMpvPlayer *Player() { return PlayerHandle; }
 
     // functions to send commands to mpv
     void SendCommand(const char *cmd, ...);
@@ -67,6 +69,7 @@ class cMpvPlayer:public cPlayer
     void SetSpeed(int Speed);
     void SetAudio(int Audio);
     void SetSubtitle(int Subtitle);
+    void SetChapter(int Chapter);
     void TogglePause();
     void QuitPlayer();
     void DiscNavUp();

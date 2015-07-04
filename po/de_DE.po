@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-mpv 0.0.3\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2015-07-03 22:39+0200\n"
+"POT-Creation-Date: 2015-07-04 09:14+0200\n"
 "PO-Revision-Date: 2015-06-29 22:14+0200\n"
 "Last-Translator: Maniac\n"
 "Language-Team: Maniac\n"
@@ -18,6 +18,15 @@ msgstr ""
 
 #. TRANSLATORS: note the trailing blank!
 msgid "Jump: "
+msgstr ""
+
+msgid "Options"
+msgstr ""
+
+msgid "Show chapters"
+msgstr ""
+
+msgid "Chapters"
 msgstr ""
 
 msgid "mpv player plugin"

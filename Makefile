@@ -46,6 +46,7 @@ TMPDIR ?= /tmp
 
 export CFLAGS   = $(call PKGCFG,cflags)
 export CXXFLAGS = $(call PKGCFG,cxxflags)
+export CXXFLAGS += -Wno-switch
 
 ### The version number of VDR's plugin API:
 
@@ -73,7 +74,7 @@ DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -D_GNU_SOURCE $(CONFIG) \
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o config.o control.o filebrowser.o osd.o player.o playmenu.o setup.o status.o
+OBJS = $(PLUGIN).o config.o control.o filebrowser.o menu_options.o osd.o player.o playmenu.o setup.o status.o
 
 ### The main target:
 

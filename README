@@ -108,7 +108,8 @@ Fast forward:           Speed up playback speed up to 32 times
 Red:                    Time search functionality like used in VDR recordings
 Green:                  Seek 60 seconds backwards
 Yellow:                 Seek 60 seconds forward
-Blue, Stop, Back:       Stop playback
+Blue:                   Show menu with current playback options
+Stop, Back:             Stop playback
 Ok:                     Display current playback status or close status display
                         if currently open
 5:                      Open disc nav menu

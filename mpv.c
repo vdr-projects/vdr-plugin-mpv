@@ -15,6 +15,8 @@
 #include "control.h"
 #include "setup.h"
 #include "playmenu.h"
+#include "player.h"
+#include "menu_options.h"
 #include "mpv_service.h"
 
 static const char *VERSION = "0.0.4"
@@ -64,6 +66,8 @@ cMpvPlugin::~cMpvPlugin(void)
 
 cOsdObject *cMpvPlugin::MainMenuAction(void)
 {
+  if (cMpvPlayer::PlayerIsRunning())
+    return new cMpvMenuOptions(cMpvPlayer::Player());
   return new cPlayMenu("MPV");
 }
 
