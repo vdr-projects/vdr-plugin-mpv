@@ -162,6 +162,17 @@ void cMpvPlayer::SetSubtitleTrack(eTrackType Type, const tTrackId *TrackId)
   SetSubtitle(TrackId->id);
 }
 
+bool cMpvPlayer::GetReplayMode(bool &Play, bool &Forward, int &Speed)
+{
+  Speed = CurrentPlaybackSpeed();
+  if (Speed == 1)
+    Speed = -1;
+  Forward = true;
+  Play = !IsPaused();
+
+  return true;
+}
+
 void cMpvPlayer::PlayerStart()
 {
   PlayerPaused = 0;
