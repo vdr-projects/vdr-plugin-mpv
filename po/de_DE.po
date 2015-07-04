@@ -18,25 +18,25 @@ msgstr ""
 
 #. TRANSLATORS: note the trailing blank!
 msgid "Jump: "
-msgstr ""
+msgstr "Springe zu:"
 
 msgid "Options"
-msgstr ""
+msgstr "Optionen"
 
 msgid "Show chapters"
-msgstr ""
+msgstr "Kapitel"
 
 msgid "Chapters"
-msgstr ""
+msgstr "Kapitel"
 
 msgid "mpv player plugin"
 msgstr ""
 
 msgid "Browse"
-msgstr ""
+msgstr "Durchsuchen"
 
 msgid "Play optical disc"
-msgstr ""
+msgstr "CD/DVD/Bluray abspielen"
 
 msgid "Play audio CD"
 msgstr "Audio CD"
@@ -45,22 +45,22 @@ msgid "Play video DVD"
 msgstr "DVD"
 
 msgid "Function not working yet, use 3 or 4"
-msgstr ""
+msgstr "Funktion noch nicht eingebaut, bitte 3 oder 4 verwenden"
 
 msgid "Hide main menu entry"
 msgstr "Hauptmenüeintrag verstecken"
 
 msgid "Audio Passthrough"
-msgstr ""
+msgstr "Audio durchreichen"
 
 msgid "DTS-HD Passthrough"
-msgstr ""
+msgstr "DTS-HD durchreichen"
 
 msgid "Enable stereo downmix"
 msgstr "Aktiviere Stereo downmix"
 
 msgid "Use prev/next keys for playlist control"
-msgstr "Weiter/Zurüc zum steuern der Playlist"
+msgstr "Weiter/Zurück zum steuern der Playlist"
 
 msgid "Control playlist if no chapters in file"
 msgstr "Steuere die Playlist wenn keine Kapitel vorhanden"
