@@ -62,7 +62,7 @@ void *cMpvPlayer::ObserverThread(void *handle)
 
   while (Player->PlayerIsRunning())
   {
-    mpv_event *event = mpv_wait_event(Player->hMpv, 5);
+    mpv_event *event = mpv_wait_event(Player->hMpv, 10000);
     switch (event->event_id)
     {
       case MPV_EVENT_SHUTDOWN :
@@ -87,18 +87,11 @@ void *cMpvPlayer::ObserverThread(void *handle)
         #endif
       break;
 
-      case MPV_EVENT_NONE :
-        if (!Player->IsPaused())
-        {
-          // no event since 5 secons and not paused -> player died
-          Player->running = 0;
-        }
-      break;
-
       case MPV_EVENT_TRACKS_CHANGED :
         Player->HandleTracksChange();
       break;
 
+      case MPV_EVENT_NONE :
       case MPV_EVENT_END_FILE :
       case MPV_EVENT_PAUSE :
       case MPV_EVENT_UNPAUSE :
@@ -204,7 +197,7 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()));
   check_error(mpv_set_option_string(hMpv, "ao", MpvPluginConfig->AudioOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "hwdec-codecs", MpvPluginConfig->HwDec.c_str()));
-  check_error(mpv_set_option_string(hMpv, "slang", MpvPluginConfig->Languages.c_str())); // this can break br menu display
+  check_error(mpv_set_option_string(hMpv, "slang", MpvPluginConfig->Languages.c_str()));
   check_error(mpv_set_option_string(hMpv, "alang", MpvPluginConfig->Languages.c_str()));
   check_error(mpv_set_option_string(hMpv, "cache", "no")); // video stutters if enabled
   check_error(mpv_set_option_string(hMpv, "fullscreen", "yes"));
@@ -212,6 +205,7 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "ontop", "yes"));
   check_error(mpv_set_option_string(hMpv, "cursor-autohide", "always"));
   check_error(mpv_set_option_string(hMpv, "stop-playback-on-init-failure", "no"));
+  check_error(mpv_set_option_string(hMpv, "idle", "once"));
   check_error(mpv_set_option(hMpv, "osd-level", MPV_FORMAT_INT64, &osdlevel));
 
   if (MpvPluginConfig->UsePassthrough)
@@ -232,10 +226,7 @@ void cMpvPlayer::PlayerStart()
   }
 
   if (PlayShuffle && IsPlaylist(PlayFilename))
-  {
-    dsyslog("use shuffle\n");
     check_error(mpv_set_option_string(hMpv, "shuffle", "yes"));
-  }
 
 #ifdef DEBUG
   mpv_request_log_messages(hMpv, "info");
@@ -246,7 +237,7 @@ void cMpvPlayer::PlayerStart()
   if (mpv_initialize(hMpv) < 0)
   {
     esyslog("[mpv] failed to initialize\n");
-    cControl::Shutdown();
+    return;
   }
 
   running = 1;

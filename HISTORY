@@ -2,6 +2,9 @@
 - added argument to override the main menu text
 - during playback show an option menu if the main menu entry is selected
   or key blue is pressed
+- optical discs are now handled using the red key, the type (audio, dvd, br)
+  is detected automatically
+- removed the first menu since it's now obsolete
 
 2015-06-29: vdr-mpv-0.0.4
 - start playback even when audio or video fails, this should give a better

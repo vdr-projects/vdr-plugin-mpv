@@ -27,6 +27,7 @@ Requirements
 - VDR version >= 2.2.0 (earlier versions may work, but are untested)
 - libmpv >= 0.8.0 (earlier versions may work, but are untested)
 - xrandr (only needed for modeline switching)
+- libcdio (only needed for optical disc playback)
 
 Installation
 ------------

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-mpv 0.0.3\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2015-07-04 09:14+0200\n"
+"POT-Creation-Date: 2015-07-05 23:36+0200\n"
 "PO-Revision-Date: 2015-06-29 22:14+0200\n"
 "Last-Translator: Maniac\n"
 "Language-Team: Maniac\n"
@@ -32,21 +32,6 @@ msgstr "Kapitel"
 msgid "mpv player plugin"
 msgstr ""
 
-msgid "Browse"
-msgstr "Durchsuchen"
-
-msgid "Play optical disc"
-msgstr "CD/DVD/Bluray abspielen"
-
-msgid "Play audio CD"
-msgstr "Audio CD"
-
-msgid "Play video DVD"
-msgstr "DVD"
-
-msgid "Function not working yet, use 3 or 4"
-msgstr "Funktion noch nicht eingebaut, bitte 3 oder 4 verwenden"
-
 msgid "Hide main menu entry"
 msgstr "Hauptmenüeintrag verstecken"
 
@@ -67,3 +52,18 @@ msgstr "Steuere die Playlist wenn keine Kapitel vorhanden"
 
 msgid "Show media title instead of filename"
 msgstr "Media Titel anstatt des Dateinamen anzeigen"
+
+#~ msgid "Browse"
+#~ msgstr "Durchsuchen"
+
+#~ msgid "Play optical disc"
+#~ msgstr "CD/DVD/Bluray abspielen"
+
+#~ msgid "Play audio CD"
+#~ msgstr "Audio CD"
+
+#~ msgid "Play video DVD"
+#~ msgstr "DVD"
+
+#~ msgid "Function not working yet, use 3 or 4"
+#~ msgstr "Funktion noch nicht eingebaut, bitte 3 oder 4 verwenden"

@@ -13,8 +13,8 @@
 #define CREATE_CONFIG 1
 #include "config.h"
 #include "control.h"
+#include "filebrowser.h"
 #include "setup.h"
-#include "playmenu.h"
 #include "player.h"
 #include "menu_options.h"
 #include "mpv_service.h"
@@ -68,7 +68,7 @@ cOsdObject *cMpvPlugin::MainMenuAction(void)
 {
   if (cMpvPlayer::PlayerIsRunning())
     return new cMpvMenuOptions(cMpvPlayer::Player());
-  return new cPlayMenu("MPV");
+  return new cMpvFilebrowser(MpvPluginConfig->BrowserRoot, MpvPluginConfig->DiscDevice);
 }
 
 bool cMpvPlugin::Service(const char *id, void *data)

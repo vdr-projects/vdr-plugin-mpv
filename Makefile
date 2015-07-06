@@ -15,9 +15,19 @@ PLUGIN = mpv
 # support refresh rate switching
 XRANDR ?= $(shell pkg-config --exists xrandr && echo 1)
 LIBMPV ?= $(shell pkg-config --exists mpv && echo 1)
+LIBCDIO ?= $(shell pkg-config --exists libcdio && echo 1)
+LIBMOUNT ?= $(shell pkg-config --exists mount && echo 1)
 
 ifneq ($(LIBMPV),1)
 $(error libmpv missing)
+endif
+
+ifeq ($(LIBCDIO),1)
+ifeq ($(LIBMOUNT),1)
+CONFIG += -DUSE_DISC
+LIBS += $(shell pkg-config --libs libcdio)
+LIBS += $(shell pkg-config --libs mount)
+endif
 endif
 
 ifeq ($(XRANDR),1)
@@ -74,7 +84,7 @@ DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -D_GNU_SOURCE $(CONFIG) \
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o config.o control.o filebrowser.o menu_options.o osd.o player.o playmenu.o setup.o status.o
+OBJS = $(PLUGIN).o config.o control.o filebrowser.o menu_options.o osd.o player.o setup.o status.o
 
 ### The main target:
 
