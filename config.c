@@ -32,6 +32,7 @@ cMpvPluginConfig::cMpvPluginConfig()
   Languages = "deu,de,ger,eng,en";
   PlayListExtString = "m3u,ini,pls,txt,playlist";
   MainMenuEntry = "MPV";
+  NoScripts = 0;
 
   X11Display = ":0.0";
 }
@@ -62,7 +63,7 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
 
   for (;;)
   {
-    switch (getopt(argc, argv, "a:v:h:d:b:l:x:rm:"))
+    switch (getopt(argc, argv, "a:v:h:d:b:l:x:rm:s"))
     {
       case 'a': // audio out
         AudioOut = optarg;
@@ -90,6 +91,9 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
       continue;
       case 'm':
         MainMenuEntry = optarg;
+      continue;
+      case 's':
+        NoScripts = 1;
       continue;
       case EOF:
       break;
@@ -128,6 +132,7 @@ const char *cMpvPluginConfig::CommandLineHelp(void)
     "  -r\t\tswitch modeline to refresh rate of played file\n"
 #endif
     "  -m text\ttext displayed in VDR main menu (Default: MPV)\n"
+    "  -s\t\tdon't load mpv LUA scripts\n"
     ;
 }
 

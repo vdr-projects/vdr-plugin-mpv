@@ -228,6 +228,9 @@ void cMpvPlayer::PlayerStart()
   if (PlayShuffle && IsPlaylist(PlayFilename))
     check_error(mpv_set_option_string(hMpv, "shuffle", "yes"));
 
+  if (MpvPluginConfig->NoScripts)
+    check_error(mpv_set_option_string(hMpv, "load-scripts", "no"));
+
 #ifdef DEBUG
   mpv_request_log_messages(hMpv, "info");
 #else

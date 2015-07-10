@@ -74,6 +74,10 @@ Command line arguments
 -m text
   the text displayed in VDR main menu (Default: MPV)
 
+-s
+  normally mpv tries to autoload LUA scripts, if this parameter is set no scripts are
+  loaded
+
 Plugin setup options
 --------------------
 
