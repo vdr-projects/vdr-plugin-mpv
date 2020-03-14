@@ -41,10 +41,13 @@ cMpvControl::~cMpvControl()
     key = kBack;
     cRemote::Put(key);
 }
+  cStatus::MsgReplaying(this, NULL, NULL, false); // This has to be done before delete the player
+
   Player->Shutdown();
   delete Player;
+  Player = NULL;
+  player = NULL;
   cDevice::SetPrimaryDevice(cDevice::PrimaryDevice()->DeviceNumber() + 1);
-  cStatus::MsgReplaying(this, NULL, NULL, false);
 }
 
 void cMpvControl::ShowProgress(void)
@@ -378,3 +381,12 @@ void cMpvControl::TimeSearchProcess(eKeys Key)
      }
 }
 
+void cMpvControl::SeekTo(int seconds)
+{
+  Player->SetTimePos(seconds);
+}
+
+void cMpvControl::SeekRelative(int seconds)
+{
+  Player->Seek(seconds);
+}

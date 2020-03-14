@@ -69,7 +69,7 @@ void *cMpvPlayer::ObserverThread(void *handle)
       case MPV_EVENT_SHUTDOWN :
         Player->running = 0;
       break;
-      
+
       case MPV_EVENT_PROPERTY_CHANGE :
         Player->HandlePropertyChange(event);
       break;
@@ -77,7 +77,7 @@ void *cMpvPlayer::ObserverThread(void *handle)
       case MPV_EVENT_PLAYBACK_RESTART :
         Player->ChangeFrameRate(Player->CurrentFps()); // switching directly after the fps event causes black screen
       break;
-      
+
       case MPV_EVENT_LOG_MESSAGE :
         msg = (struct mpv_event_log_message *)event->data;
         // without DEBUG log to error since we only request error messages from mpv in this case
@@ -170,6 +170,18 @@ bool cMpvPlayer::GetReplayMode(bool &Play, bool &Forward, int &Speed)
   return true;
 }
 
+bool cMpvPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame __attribute__((unused)))
+{
+	Total = TotalPlayTime() * FramesPerSecond();
+	Current = CurrentPlayTime() * FramesPerSecond();
+	return true;
+}
+
+double cMpvPlayer::FramesPerSecond()
+{
+  return CurrentFps();
+}
+
 void cMpvPlayer::PlayerStart()
 {
   PlayerPaused = 0;
@@ -224,7 +236,7 @@ void cMpvPlayer::PlayerStart()
   }
   else
   {
-    int64_t StartVolume = cDevice::CurrentVolume() / 2.55; 
+    int64_t StartVolume = cDevice::CurrentVolume() / 2.55;
     check_error(mpv_set_option(hMpv, "volume", MPV_FORMAT_INT64, &StartVolume));
     if (MpvPluginConfig->StereoDownmix)
     {
@@ -244,7 +256,7 @@ void cMpvPlayer::PlayerStart()
 #else
   mpv_request_log_messages(hMpv, "error");
 #endif
-  
+
   if (mpv_initialize(hMpv) < 0)
   {
     esyslog("[mpv] failed to initialize\n");
@@ -281,7 +293,7 @@ void cMpvPlayer::HandlePropertyChange(mpv_event *event)
   {
     dsyslog("[mpv]: property %s \n", property->name);
   }
-  
+
   switch (event->reply_userdata)
   {
     case MPV_OBSERVE_TIME_POS :
@@ -323,7 +335,7 @@ void cMpvPlayer::HandlePropertyChange(mpv_event *event)
     case MPV_OBSERVE_CHAPTER :
       PlayerChapter = (int)*(int64_t*)property->data;
     break;
-    
+
     case MPV_OBSERVE_PAUSE :
       PlayerPaused = (int)*(int64_t*)property->data;
     break;
@@ -587,4 +599,3 @@ void cMpvPlayer::SetVolume(int Volume)
 {
   SendCommand("set volume %d\n", Volume);
 }
-

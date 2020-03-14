@@ -73,6 +73,23 @@ cOsdObject *cMpvPlugin::MainMenuAction(void)
 
 bool cMpvPlugin::Service(const char *id, void *data)
 {
+  if (strcmp(id, "Mpv_Seek") == 0)
+  {
+    Mpv_Seek *seekInfo = (Mpv_Seek *)data;
+
+    cMpvControl* control = dynamic_cast<cMpvControl*>(cControl::Control(true));
+		if(control) {
+      if(seekInfo->SeekRelative != 0)
+      {
+          control->SeekRelative(seekInfo->SeekRelative);
+      }
+      else if(seekInfo->SeekAbsolute >= 0)
+      {
+        control->SeekTo(seekInfo->SeekAbsolute);
+      }
+		}
+    return true;
+  }
   if (strcmp(id, "Mpv_PlayFile") == 0)
   {
     Mpv_PlayFile *playFile = (Mpv_PlayFile *)data;

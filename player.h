@@ -57,6 +57,8 @@ class cMpvPlayer:public cPlayer
     virtual void SetAudioTrack(eTrackType Type, const tTrackId *TrackId);
     virtual void SetSubtitleTrack(eTrackType Type, const tTrackId *TrackId);
     virtual bool GetReplayMode(bool &Play, bool &Forward, int &Speed);
+    virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame = false);
+    virtual double FramesPerSecond();
     void OsdClose();                              // clear or close current OSD
     void Shutdown();
     static volatile int PlayerIsRunning() { return running; }
