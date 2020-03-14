@@ -27,6 +27,7 @@ cMpvPluginConfig::cMpvPluginConfig()
   RefreshRate = 0;
   VideoOut = "vdpau";
   HwDec = "vdpau";
+  UseGlx = 0;
   AudioOut = "alsa:device=default";
   DiscDevice = "/dev/dvd";
   Languages = "deu,de,ger,eng,en";
@@ -63,7 +64,7 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
 
   for (;;)
   {
-    switch (getopt(argc, argv, "a:v:h:d:b:l:x:rm:s"))
+    switch (getopt(argc, argv, "a:v:h:d:b:l:x:rm:sg"))
     {
       case 'a': // audio out
         AudioOut = optarg;
@@ -95,13 +96,16 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
       case 's':
         NoScripts = 1;
       continue;
+      case 'g': // glx with x11
+        UseGlx = 1;
+      continue;
       case EOF:
       break;
       case ':':
         esyslog("[mpv]: missing argument for option '%c'\n", optopt);
         return 0;
       default:
-        esyslog("[mpv]: unkown option '%c'\n", optopt);
+        esyslog("[mpv]: unknown option '%c'\n", optopt);
         return 0;
     }
     break;

@@ -25,7 +25,7 @@ Requirements
 ------------
 
 - VDR version >= 2.2.0 (earlier versions may work, but are untested)
-- libmpv >= 0.8.0 (earlier versions may work, but are untested)
+- libmpv >= 0.23.0 (for old version use vdr-plugin-mpv 0.0.4.
 - xrandr (only needed for modeline switching)
 - libcdio (only needed for optical disc playback)
 
@@ -40,7 +40,7 @@ Command line arguments
 ----------------------
 
 -a audio
-  mpv --ao (Default: alsa:device=default)
+  mpv -audio-device (Default: alsa:device=default)
   The audio out device which is used by mpv, this is directly passed as ao to mpv.
 
 -v video
@@ -48,9 +48,9 @@ Command line arguments
   The video out device which is used by mpv, this is directly passed as vo to mpv.
 
 -h hwdec
-  mpv --hwdec-codecs (Default: vdpau)
-  The hwdec-codecs which are used by mpv, this is directly passed as hwdec-codecs
-  to mpv.
+  mpv -hwdec (Default: vdpau)
+  The hwdec which are used by mpv, this is directly passed as hwdec
+  to mpv. For latest mpv use -h gpu (also see -g parameter)
 
 -d device
   optical disc device (Default: /dev/dvd)
@@ -77,6 +77,10 @@ Command line arguments
 -s
   normally mpv tries to autoload LUA scripts, if this parameter is set no scripts are
   loaded
+
+-g
+  normally mpv use EGL for hwdec=gpu and can not works with X11, if this parameter is set
+  mpv use GLX for hwdec=gpu and can works with X11
 
 Plugin setup options
 --------------------

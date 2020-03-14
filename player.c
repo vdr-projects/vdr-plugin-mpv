@@ -196,8 +196,11 @@ void cMpvPlayer::PlayerStart()
 
   check_error(mpv_set_option_string(hMpv, "vo", MpvPluginConfig->VideoOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()));
-  check_error(mpv_set_option_string(hMpv, "ao", MpvPluginConfig->AudioOut.c_str()));
-  check_error(mpv_set_option_string(hMpv, "hwdec-codecs", MpvPluginConfig->HwDec.c_str()));
+  if (MpvPluginConfig->UseGlx)
+  {
+      check_error(mpv_set_option_string(hMpv, "gpu-context", "x11"));
+  }
+  check_error(mpv_set_option_string(hMpv, "audio-device", MpvPluginConfig->AudioOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "slang", MpvPluginConfig->Languages.c_str()));
   check_error(mpv_set_option_string(hMpv, "alang", MpvPluginConfig->Languages.c_str()));
   check_error(mpv_set_option_string(hMpv, "cache", "no")); // video stutters if enabled
@@ -208,12 +211,16 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "stop-playback-on-init-failure", "no"));
   check_error(mpv_set_option_string(hMpv, "idle", "once"));
   check_error(mpv_set_option(hMpv, "osd-level", MPV_FORMAT_INT64, &osdlevel));
+#ifdef DEBUG
+  check_error(mpv_set_option_string(hMpv, "log-level", "debug"));
+  check_error(mpv_set_option_string(hMpv, "log-file", "/var/log/mpv"));
+#endif
 
   if (MpvPluginConfig->UsePassthrough)
   {
-    check_error(mpv_set_option_string(hMpv, "ad", "-spdif:mp3,-spdif:aac,spdif:*"));
+    check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts"));
     if (MpvPluginConfig->UseDtsHdPassthrough)
-      check_error(mpv_set_option_string(hMpv, "ad-spdif-dtshd", "yes"));
+      check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts,dts-hd,truehd,eac3"));
   }
   else
   {
