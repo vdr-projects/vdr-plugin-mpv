@@ -18,8 +18,9 @@ LIBMPV ?= $(shell pkg-config --exists mpv && echo 1)
 LIBCDIO ?= $(shell pkg-config --exists libcdio && echo 1)
 LIBMOUNT ?= $(shell pkg-config --exists mount && echo 1)
 
-ifneq ($(LIBMPV),1)
-$(error libmpv missing)
+ifeq ($(LIBMPV),1)
+CONFIG += -DUSE_LIBMPV
+LIBS += $(shell pkg-config --libs mpv)
 endif
 
 ifeq ($(LIBCDIO),1)
@@ -34,8 +35,6 @@ ifeq ($(XRANDR),1)
 CONFIG += -DUSE_XRANDR
 LIBS += $(shell pkg-config --libs xrandr)
 endif
-
-LIBS += $(shell pkg-config --libs mpv)
 
 ### The version number of this plugin (taken from the main source file):
 

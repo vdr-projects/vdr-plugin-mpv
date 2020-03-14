@@ -62,7 +62,7 @@ void *cMpvPlayer::ObserverThread(void *handle)
 
   while (Player->PlayerIsRunning())
   {
-    mpv_event *event = mpv_wait_event(Player->hMpv, 10000);
+    mpv_event *event = mpv_wait_event(Player->hMpv, 5);
     switch (event->event_id)
     {
       case MPV_EVENT_SHUTDOWN :
