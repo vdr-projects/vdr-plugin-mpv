@@ -33,6 +33,7 @@ using std::vector;
 
 volatile int cMpvPlayer::running = 0;
 cMpvPlayer *cMpvPlayer::PlayerHandle = NULL;
+std::string LocaleSave;
 
 // check mpv errors and send them to log
 static inline void check_error(int status)
@@ -181,7 +182,7 @@ void cMpvPlayer::PlayerStart()
   // we are cheating here with mpv since it checks for LC_NUMERIC=C at startup
   // this can cause unforseen issues with mpv
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  std::string LocaleSave = setlocale(LC_NUMERIC, NULL);
+  LocaleSave = setlocale(LC_NUMERIC, NULL);
   dsyslog ("get locale %s\n", LocaleSave.c_str());
   setlocale(LC_NUMERIC, "C");
   hMpv = mpv_create();
@@ -192,7 +193,7 @@ void cMpvPlayer::PlayerStart()
   }
 
   int64_t osdlevel = 0;
-  
+
   check_error(mpv_set_option_string(hMpv, "vo", MpvPluginConfig->VideoOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()));
   check_error(mpv_set_option_string(hMpv, "ao", MpvPluginConfig->AudioOut.c_str()));
@@ -259,9 +260,6 @@ void cMpvPlayer::PlayerStart()
 
   // start thread to observe and react on mpv events
   pthread_create(&ObserverThreadHandle, NULL, ObserverThread, this);
-
-  // set back locale
-  setlocale(LC_NUMERIC, LocaleSave.c_str());
 }
 
 void cMpvPlayer::HandlePropertyChange(mpv_event *event)
@@ -393,6 +391,8 @@ void cMpvPlayer::Shutdown()
   mpv_terminate_destroy(hMpv);
   hMpv = NULL;
   cOsdProvider::Shutdown();
+  // set back locale
+  setlocale(LC_NUMERIC, LocaleSave.c_str());
   if (MpvPluginConfig->RefreshRate)
   {
     ChangeFrameRate(OriginalFps);
