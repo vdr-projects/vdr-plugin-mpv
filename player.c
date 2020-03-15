@@ -220,7 +220,7 @@ void cMpvPlayer::PlayerStart()
     }
     if (!strcmp(MpvPluginConfig->HwDec.c_str(),"vdpau"))
     {
-        check_error(mpv_set_option_string(hMpv, "vf", "vdpaupp=deint=yes:deintmode=temporal-spatial"));
+        check_error(mpv_set_option_string(hMpv, "vf", "vdpaupp=deint=yes:deint-mode=temporal-spatial"));
     }
     if (!strcmp(MpvPluginConfig->HwDec.c_str(),"cuda"))
     {
