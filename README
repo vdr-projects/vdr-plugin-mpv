@@ -25,7 +25,7 @@ Requirements
 ------------
 
 - VDR version >= 2.2.0 (earlier versions may work, but are untested)
-- libmpv >= 0.23.0 (for old version use vdr-plugin-mpv 0.0.4.
+- libmpv >= 0.30.0 (for old version use vdr-plugin-mpv 0.0.4.
 - xrandr (only needed for modeline switching)
 - libcdio (only needed for optical disc playback)
 
@@ -88,6 +88,9 @@ Plugin setup options
 - Hide main menu entry
   Don't show the filebrowser in VDR main menu
 
+- Video Deinterlace
+  Video deinterlacing is enabled
+
 - Audio passthrough
   Passthrough digital audio (like AC3, DTS) formats without decoding them
   If passthrough is disabled the VDR volume control is used 
@@ -104,6 +107,9 @@ Plugin setup options
 
 - Control playlist if no chapters in file
   If a file without chapters is played use the prev/next keys for playlist control
+
+- Show subtitles
+  Showing subtitles is enabled
 
 Remote control keys
 -------------------

@@ -30,6 +30,7 @@ class cMpvPluginConfig
     bool SetupParse(const char *name, const char *value);  // parse setup.conf values
 
     // plugin setup variables
+    int UseDeinterlace;             // enable deinterlace
     int UsePassthrough;             // enable passthrough
     int UseDtsHdPassthrough;        // enable DTS-HD passthrough
     int StereoDownmix;              // enable stereo downmix
@@ -37,6 +38,7 @@ class cMpvPluginConfig
     int PlaylistOnNextKey;          // skip to next playlist item on next/previous keys
     int PlaylistIfNoChapters;       // skip to next playlist item if the file has no chapters
     int ShowMediaTitle;             // show title from media file instead of filename
+    int ShowSubtitles;              // show subtitles
 
     // plugin parameter variables
     string BrowserRoot;             // start dir for filebrowser

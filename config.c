@@ -16,12 +16,14 @@
 cMpvPluginConfig::cMpvPluginConfig()
 {
   HideMainMenuEntry = 0;
+  UseDeinterlace = 1;
   UsePassthrough = 1;
   UseDtsHdPassthrough = 1;
   StereoDownmix = 0;
   PlaylistOnNextKey = 0;
   PlaylistIfNoChapters = 1;
   ShowMediaTitle = 0;
+  ShowSubtitles = 0;
 
   BrowserRoot = "/";
   RefreshRate = 0;
@@ -137,6 +139,7 @@ const char *cMpvPluginConfig::CommandLineHelp(void)
 #endif
     "  -m text\ttext displayed in VDR main menu (Default: MPV)\n"
     "  -s\t\tdon't load mpv LUA scripts\n"
+    "  -g\t\tuse GLX with X11\n"
     ;
 }
 
@@ -144,6 +147,8 @@ bool cMpvPluginConfig::SetupParse(const char *name, const char *value)
 {
   if (!strcasecmp(name, "HideMainMenuEntry"))
     HideMainMenuEntry = atoi(value);
+  else if (!strcasecmp(name, "UseDeinterlace"))
+    UseDeinterlace = atoi(value);
   else if (!strcasecmp(name, "UsePassthrough"))
     UsePassthrough = atoi(value);
   else if (!strcasecmp(name, "StereoDownmix"))
@@ -156,6 +161,8 @@ bool cMpvPluginConfig::SetupParse(const char *name, const char *value)
     PlaylistIfNoChapters = atoi(value);
   else if (!strcasecmp(name, "ShowMediaTitle"))
     ShowMediaTitle = atoi(value);
+  else if (!strcasecmp(name, "ShowSubtitles"))
+    ShowSubtitles = atoi(value);
   else
     return false;
   return true;

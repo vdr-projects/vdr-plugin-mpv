@@ -212,11 +212,28 @@ void cMpvPlayer::PlayerStart()
   {
       check_error(mpv_set_option_string(hMpv, "gpu-context", "x11"));
   }
+  if (MpvPluginConfig->UseDeinterlace)
+  {
+    if (!strcmp(MpvPluginConfig->HwDec.c_str(),"vaapi"))
+    {
+        check_error(mpv_set_option_string(hMpv, "vf", "vavpp=deint=auto"));
+    }
+    if (!strcmp(MpvPluginConfig->HwDec.c_str(),"vdpau"))
+    {
+        check_error(mpv_set_option_string(hMpv, "vf", "vdpaupp=deint=yes:deintmode=temporal-spatial"));
+    }
+    if (!strcmp(MpvPluginConfig->HwDec.c_str(),"cuda"))
+    {
+        check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
+        check_error(mpv_set_option_string(hMpv, "vd-lavc-o", "deint=adaptive"));
+    }
+  }
   check_error(mpv_set_option_string(hMpv, "audio-device", MpvPluginConfig->AudioOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "slang", MpvPluginConfig->Languages.c_str()));
   check_error(mpv_set_option_string(hMpv, "alang", MpvPluginConfig->Languages.c_str()));
   check_error(mpv_set_option_string(hMpv, "cache", "no")); // video stutters if enabled
   check_error(mpv_set_option_string(hMpv, "fullscreen", "yes"));
+  check_error(mpv_set_option_string(hMpv, "sub-visibility", MpvPluginConfig->ShowSubtitles ? "yes" : "no"));
   check_error(mpv_set_option_string(hMpv, "sub-forced-only", "yes"));
   check_error(mpv_set_option_string(hMpv, "ontop", "yes"));
   check_error(mpv_set_option_string(hMpv, "cursor-autohide", "always"));
@@ -224,7 +241,6 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "idle", "once"));
   check_error(mpv_set_option(hMpv, "osd-level", MPV_FORMAT_INT64, &osdlevel));
 #ifdef DEBUG
-  check_error(mpv_set_option_string(hMpv, "log-level", "debug"));
   check_error(mpv_set_option_string(hMpv, "log-file", "/var/log/mpv"));
 #endif
 

@@ -12,12 +12,14 @@
 cMpvPluginSetup::cMpvPluginSetup()
 {
   SetupHideMainMenuEntry = MpvPluginConfig->HideMainMenuEntry;
+  SetupUseDeinterlace = MpvPluginConfig->UseDeinterlace;
   SetupUsePassthrough = MpvPluginConfig->UsePassthrough;
   SetupUseDtsHdPassthrough = MpvPluginConfig->UseDtsHdPassthrough;
   SetupPlaylistOnNextKey = MpvPluginConfig->PlaylistOnNextKey;
   SetupPlaylistIfNoChapters = MpvPluginConfig->PlaylistIfNoChapters;
   SetupStereoDownmix = MpvPluginConfig->StereoDownmix;
   SetupShowMediaTitle = MpvPluginConfig->ShowMediaTitle;
+  SetupShowSubtitles = MpvPluginConfig->ShowSubtitles;
   Setup();
 }
 
@@ -39,6 +41,7 @@ void cMpvPluginSetup::Setup()
   Clear();
 
   Add(new cMenuEditBoolItem(tr("Hide main menu entry"), &SetupHideMainMenuEntry, trVDR("no"), trVDR("yes")));
+  Add(new cMenuEditBoolItem(tr("Video Deinterlace"), &SetupUseDeinterlace));
   Add(new cMenuEditBoolItem(tr("Audio Passthrough"), &SetupUsePassthrough));
   if (SetupUsePassthrough)
     Add(new cMenuEditBoolItem(tr("DTS-HD Passthrough"), &SetupUseDtsHdPassthrough));
@@ -48,6 +51,7 @@ void cMpvPluginSetup::Setup()
   if (!SetupPlaylistOnNextKey)
     Add(new cMenuEditBoolItem(tr("Control playlist if no chapters in file"), &SetupPlaylistIfNoChapters));
   Add(new cMenuEditBoolItem(tr("Show media title instead of filename"), &SetupShowMediaTitle));
+  Add(new cMenuEditBoolItem(tr("Show subtitles"), &SetupShowSubtitles));
   SetCurrent(Get(current));
   Display();
 }
@@ -55,11 +59,13 @@ void cMpvPluginSetup::Setup()
 void cMpvPluginSetup::Store()
 {
     SetupStore("HideMainMenuEntry", MpvPluginConfig->HideMainMenuEntry = SetupHideMainMenuEntry);
+    SetupStore("UseDeinterlace", MpvPluginConfig->UseDeinterlace = SetupUseDeinterlace);
     SetupStore("UsePassthrough", MpvPluginConfig->UsePassthrough = SetupUsePassthrough);
     SetupStore("UseDtsHdPassthrough", MpvPluginConfig->UseDtsHdPassthrough = SetupUseDtsHdPassthrough);
     SetupStore("StereoDownmix", MpvPluginConfig->StereoDownmix = SetupStereoDownmix);
     SetupStore("PlaylistOnNextKey", MpvPluginConfig->PlaylistOnNextKey = SetupPlaylistOnNextKey);
     SetupStore("PlaylistIfNoChapters", MpvPluginConfig->PlaylistIfNoChapters = SetupPlaylistIfNoChapters);
     SetupStore("ShowMediaTitle", MpvPluginConfig->ShowMediaTitle = SetupShowMediaTitle);
+    SetupStore("ShowSubtitles", MpvPluginConfig->ShowSubtitles = SetupShowSubtitles);
 }
 
