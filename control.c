@@ -40,7 +40,7 @@ cMpvControl::~cMpvControl()
     cRemote::Put(key);
     key = kBack;
     cRemote::Put(key);
-}
+  }
   cStatus::MsgReplaying(this, NULL, NULL, false); // This has to be done before delete the player
 
   Player->Shutdown();
@@ -146,7 +146,6 @@ eOSState cMpvControl::ProcessKey(eKeys key)
         break;
       }
     case kPlay:
-      Hide();
       if (Player->CurrentPlaybackSpeed() != 1)
       {
         Player->SetSpeed(1);
@@ -155,7 +154,6 @@ eOSState cMpvControl::ProcessKey(eKeys key)
       {
         Player->TogglePause();
       }
-      ShowProgress();
     break;
 
     case kDown:
@@ -166,7 +164,6 @@ eOSState cMpvControl::ProcessKey(eKeys key)
       }
     case kPause:
       Player->TogglePause();
-      ShowProgress();
     break;
 
     case kLeft:
@@ -179,7 +176,6 @@ eOSState cMpvControl::ProcessKey(eKeys key)
       // reset to normal playback speed (if fastfwd is active currently) and then just go back 10 seconds since there is no fastrew in mpv
       Player->SetSpeed(1);
       Player->Seek(-10);
-      ShowProgress();
     break;
     case kRight:
       if (Player->DiscNavActive())
@@ -192,7 +188,6 @@ eOSState cMpvControl::ProcessKey(eKeys key)
       {
         Player->SetSpeed(Player->CurrentPlaybackSpeed() * 2);
       }
-      ShowProgress();
     break;
 
     case kRed:

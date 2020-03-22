@@ -52,9 +52,9 @@ void *cMpvPlayer::ObserverThread(void *handle)
   // set properties which should be observed
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_TIME_POS, "time-pos", MPV_FORMAT_DOUBLE);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_DISC_MENU, "disc-menu-active", MPV_FORMAT_FLAG);
-  mpv_observe_property(Player->hMpv, MPV_OBSERVE_FPS, "fps", MPV_FORMAT_DOUBLE);
+  mpv_observe_property(Player->hMpv, MPV_OBSERVE_FPS, "container-fps", MPV_FORMAT_DOUBLE);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_FILENAME, "filename", MPV_FORMAT_STRING);
-  mpv_observe_property(Player->hMpv, MPV_OBSERVE_LENGTH, "length", MPV_FORMAT_DOUBLE);
+  mpv_observe_property(Player->hMpv, MPV_OBSERVE_LENGTH, "duration", MPV_FORMAT_DOUBLE);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_CHAPTERS, "chapters", MPV_FORMAT_INT64);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_CHAPTER, "chapter", MPV_FORMAT_INT64);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_PAUSE, "pause", MPV_FORMAT_FLAG);
