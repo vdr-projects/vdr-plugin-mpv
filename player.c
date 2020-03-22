@@ -235,6 +235,7 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "fullscreen", "yes"));
   check_error(mpv_set_option_string(hMpv, "sub-visibility", MpvPluginConfig->ShowSubtitles ? "yes" : "no"));
   check_error(mpv_set_option_string(hMpv, "sub-forced-only", "yes"));
+  check_error(mpv_set_option_string(hMpv, "sub-auto", "all"));
   check_error(mpv_set_option_string(hMpv, "ontop", "yes"));
   check_error(mpv_set_option_string(hMpv, "cursor-autohide", "always"));
   check_error(mpv_set_option_string(hMpv, "stop-playback-on-init-failure", "no"));
