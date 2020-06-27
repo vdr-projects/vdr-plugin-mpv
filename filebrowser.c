@@ -19,7 +19,7 @@ string cMpvFilebrowser::currentDir = "";
 string cMpvFilebrowser::currentItem = "";
 
 cMpvFilebrowser::cMpvFilebrowser(string RootDir, string DiscDevice)
-:cOsdMenu("Filebrowser")
+:cOsdMenu(tr("Filebrowser"))
 {
   rootDir = RootDir;
   discDevice = DiscDevice;
@@ -64,14 +64,14 @@ void cMpvFilebrowser::ShowDirectory(string Path)
   for (unsigned int i=0; i<Files.size(); i++)
     AddItem(Path, Files[i], false);
 
-  string MenuTitle = "Filebrowser";
+  string MenuTitle = tr("Filebrowser");
   if (rootDir != Path)
     MenuTitle += " (" + Path.substr(rootDir.size() + 1, string::npos) + ")";
   SetTitle(MenuTitle.c_str());
 #ifdef USE_DISC
-  SetHelp("Disc", NULL, "Shuffle", NULL);
+  SetHelp(tr("Disc"), NULL, tr("Shuffle"), NULL);
 #else
-  SetHelp(NULL, NULL, "Shuffle", NULL);
+  SetHelp(NULL, NULL, tr("Shuffle"), NULL);
 #endif
   Display();
 }

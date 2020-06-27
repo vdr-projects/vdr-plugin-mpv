@@ -1,4 +1,10 @@
-2015-XX-XX vdr-mpv-0.0.5
+2020-06-27 vdr-mpv-0.0.5
+- Adapted for the latest mpv. For old mpv use plugin 0.0.4.
+- Added enabling for viewing subtitles and enabling for deinterlacing.
+- Enable load external subtitles.
+- added argument 'g' to use mpv with X11
+
+2015-XX-XX vdr-mpv-0.0.5-pre
 - added argument to override the main menu text
 - during playback show an option menu if the main menu entry is selected
   or key blue is pressed

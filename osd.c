@@ -34,8 +34,9 @@ cMpvOsd::cMpvOsd(int Left, int Top, uint Level, cMpvPlayer *player)
   int OsdAreaHeight = OsdHeight() + cOsd::Top();
   fdOsd = open ("/tmp/vdr_mpv_osd", O_CREAT | O_RDWR, S_IWUSR | S_IRUSR);
   lseek(fdOsd, OsdAreaWidth*OsdAreaHeight*4, SEEK_SET);
-  write(fdOsd, "", 1);
-  pOsd = (char*) mmap (NULL, OsdAreaWidth*OsdAreaHeight*4, PROT_WRITE, MAP_SHARED, fdOsd, 0);
+  int ret=write(fdOsd, "", 1);
+  if (ret)
+      pOsd = (char*) mmap (NULL, OsdAreaWidth*OsdAreaHeight*4, PROT_WRITE, MAP_SHARED, fdOsd, 0);
 
   SetActive(true);
 }

@@ -371,13 +371,13 @@ void cMpvPlayer::HandleTracksChange()
 {
   mpv_node Node;
   mpv_get_property(hMpv, "track-list", MPV_FORMAT_NODE, &Node);
-  if (!Node.format == MPV_FORMAT_NODE_ARRAY)
+  if (Node.format != MPV_FORMAT_NODE_ARRAY)
     return;
 
   // loop though available tracks
   for (int i=0; i<Node.u.list->num; i++)
   {
-    int TrackId;
+    int TrackId = 0;
     string TrackType;
     string TrackLanguage = "undefined";
     string TrackTitle = "";
