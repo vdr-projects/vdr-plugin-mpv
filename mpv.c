@@ -20,10 +20,10 @@
 #include "mpv_service.h"
 
 static const char *VERSION = "0.0.5"
-  #ifdef GIT_REV
+#ifdef GIT_REV
     "-GIT" GIT_REV
-  #endif
-  ;
+#endif
+;
 
 using std::string;
 
@@ -125,7 +125,9 @@ bool cMpvPlugin::Service(const char *id, void *data)
 
 cString cMpvPlugin::SVDRPCommand(const char *Command, const char *Option, int &ReplayCode)
 {
+#ifdef DEBUG
   dsyslog ("Command %s Option %s\n", Command, Option);
+#endif
   if (strcasecmp(Command, "PLAY") == 0)
   {
     PlayFileHandleType(Option);

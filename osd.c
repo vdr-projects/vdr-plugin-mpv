@@ -37,13 +37,17 @@ cMpvOsd::cMpvOsd(int Left, int Top, uint Level, cMpvPlayer *player)
   int ret=write(fdOsd, "", 1);
   if (ret)
       pOsd = (char*) mmap (NULL, OsdAreaWidth*OsdAreaHeight*4, PROT_WRITE, MAP_SHARED, fdOsd, 0);
-
+#ifdef DEBUG
+  dsyslog("[mpv] Osd %d %d \n",fdOsd,ret);
+#endif
   SetActive(true);
 }
 
 cMpvOsd::~cMpvOsd()
 {
+#ifdef DEBUG
   dsyslog("[mpv] %s\n", __FUNCTION__);
+#endif
   SetActive(false);
 
   if (cMpvPlayer::PlayerIsRunning())

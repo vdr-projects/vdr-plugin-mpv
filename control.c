@@ -13,7 +13,9 @@
 cMpvControl::cMpvControl(string Filename, bool Shuffle)
 :cControl(Player = new cMpvPlayer(Filename.c_str(), Shuffle))
 {
+#ifdef DEBUG
   dsyslog("[mpv] %s\n", __FUNCTION__);
+#endif
   DisplayReplay = NULL;
   VolumeStatus = NULL;
   if (!MpvPluginConfig->UsePassthrough)
@@ -25,7 +27,9 @@ cMpvControl::cMpvControl(string Filename, bool Shuffle)
 
 cMpvControl::~cMpvControl()
 {
+#ifdef DEBUG
   dsyslog("[mpv]%s\n", __FUNCTION__);
+#endif
   if (VolumeStatus)
     delete VolumeStatus;
   Hide();
@@ -36,7 +40,9 @@ cMpvControl::~cMpvControl()
   if (cOsd::IsOpen())
   {
     eKeys key = kMenu;
+#ifdef DEBUG
     dsyslog ("[mpv] osd is open sending menu key followed by back key\n");
+#endif
     cRemote::Put(key);
     key = kBack;
     cRemote::Put(key);
@@ -109,12 +115,12 @@ void cMpvControl::Hide()
 eOSState cMpvControl::ProcessKey(eKeys key)
 {
   eOSState state;
-
+#ifdef DEBUG
   if (key != kNone)
   {
     dsyslog("[mpv]%s: key=%d\n", __FUNCTION__, key);
   }
-
+#endif
   if (!Player->PlayerIsRunning()) // check if player is still alive
   {
     cControl::Shutdown();

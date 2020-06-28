@@ -81,11 +81,11 @@ void *cMpvPlayer::ObserverThread(void *handle)
       case MPV_EVENT_LOG_MESSAGE :
         msg = (struct mpv_event_log_message *)event->data;
         // without DEBUG log to error since we only request error messages from mpv in this case
-        #ifdef DEBUG
+#ifdef DEBUG
           dsyslog("[mpv]: %s\n", msg->text);
-        #else
+#else
           esyslog("[mpv]: %s\n", msg->text);
-        #endif
+#endif
       break;
 
       case MPV_EVENT_TRACKS_CHANGED :
@@ -116,7 +116,9 @@ void *cMpvPlayer::ObserverThread(void *handle)
       break;
     }
   }
+#ifdef DEBUG
   dsyslog("[mpv] Observer thread ended\n");
+#endif
   return handle;
 }
 
@@ -132,7 +134,9 @@ cMpvPlayer::cMpvPlayer(string Filename, bool Shuffle)
 
 cMpvPlayer::~cMpvPlayer()
 {
+#ifdef DEBUG
   dsyslog("[mpv]%s: end\n", __FUNCTION__);
+#endif
   Detach();
   PlayerHandle = NULL;
 }
@@ -195,7 +199,9 @@ void cMpvPlayer::PlayerStart()
   // this can cause unforseen issues with mpv
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   LocaleSave = setlocale(LC_NUMERIC, NULL);
+#ifdef DEBUG
   dsyslog ("get locale %s\n", LocaleSave.c_str());
+#endif
   setlocale(LC_NUMERIC, "C");
   hMpv = mpv_create();
   if (!hMpv)
@@ -240,6 +246,8 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "cursor-autohide", "always"));
   check_error(mpv_set_option_string(hMpv, "stop-playback-on-init-failure", "no"));
   check_error(mpv_set_option_string(hMpv, "idle", "once"));
+  check_error(mpv_set_option_string(hMpv, "force-window", "yes"));
+  check_error(mpv_set_option_string(hMpv, "image-display-duration", "inf"));
   check_error(mpv_set_option(hMpv, "osd-level", MPV_FORMAT_INT64, &osdlevel));
 #ifdef DEBUG
   check_error(mpv_set_option_string(hMpv, "log-file", "/var/log/mpv"));
@@ -408,8 +416,9 @@ void cMpvPlayer::HandleTracksChange()
 
 void cMpvPlayer::OsdClose()
 {
+#ifdef DEBUG
   dsyslog("[mpv] %s\n", __FUNCTION__);
-
+#endif
   SendCommand ("overlay_remove 1");
 }
 
@@ -438,7 +447,9 @@ void cMpvPlayer::Shutdown()
 
 void cMpvPlayer::SwitchOsdToMpv()
 {
+#ifdef DEBUG
   dsyslog("[mpv] %s\n", __FUNCTION__);
+#endif
   cOsdProvider::Shutdown();
   new cMpvOsdProvider(this);
 }
@@ -456,7 +467,7 @@ bool cMpvPlayer::IsPlaylist(string File)
 
 void cMpvPlayer::ChangeFrameRate(int TargetRate)
 {
-  #ifdef USE_XRANDR
+#ifdef USE_XRANDR
   if (!MpvPluginConfig->RefreshRate)
     return;
 
