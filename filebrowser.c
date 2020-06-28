@@ -10,6 +10,7 @@
 
 #include "filebrowser.h"
 #include "mpv_service.h"
+#include "config.h"
 
 using std::string;
 using std::vector;
@@ -38,6 +39,16 @@ void cMpvFilebrowser::ShowDirectory(string Path)
   struct dirent *Entry;
 
   hDir = opendir(Path.c_str());
+  // do not crash if browser root directory absent
+  if (!hDir)
+  {
+    esyslog("[mpv] No browser root directory!\n");
+    rootDir = "/";
+    currentDir = rootDir;
+    MpvPluginConfig->BrowserRoot = rootDir;
+    Path = rootDir;
+    hDir = opendir(Path.c_str());
+  }
   while ((Entry = readdir(hDir)) != NULL)
   {
     if (!Entry || Entry->d_name[0] == '.')
