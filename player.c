@@ -615,12 +615,12 @@ void cMpvPlayer::NextChapter()
 
 void cMpvPlayer::NextPlaylistItem()
 {
-  SendCommand("pt_step 1\n");
+  SendCommand("playlist-next\n");
 }
 
 void cMpvPlayer::PreviousPlaylistItem()
 {
-  SendCommand("pt_step -1\n");
+  SendCommand("playlist-prev\n");
 }
 
 void cMpvPlayer::SetVolume(int Volume)
