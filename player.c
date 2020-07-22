@@ -245,7 +245,7 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "ontop", "yes"));
   check_error(mpv_set_option_string(hMpv, "cursor-autohide", "always"));
   check_error(mpv_set_option_string(hMpv, "stop-playback-on-init-failure", "no"));
-  check_error(mpv_set_option_string(hMpv, "idle", "once"));
+  check_error(mpv_set_option_string(hMpv, "idle", MpvPluginConfig->ExitAtEnd ? "once" : "yes"));
   check_error(mpv_set_option_string(hMpv, "force-window", "yes"));
   check_error(mpv_set_option_string(hMpv, "image-display-duration", "inf"));
   check_error(mpv_set_option(hMpv, "osd-level", MPV_FORMAT_INT64, &osdlevel));

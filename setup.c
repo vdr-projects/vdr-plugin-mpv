@@ -20,6 +20,7 @@ cMpvPluginSetup::cMpvPluginSetup()
   SetupStereoDownmix = MpvPluginConfig->StereoDownmix;
   SetupShowMediaTitle = MpvPluginConfig->ShowMediaTitle;
   SetupShowSubtitles = MpvPluginConfig->ShowSubtitles;
+  SetupExitAtEnd = MpvPluginConfig->ExitAtEnd;
   Setup();
 }
 
@@ -52,6 +53,7 @@ void cMpvPluginSetup::Setup()
     Add(new cMenuEditBoolItem(tr("Control playlist if no chapters in file"), &SetupPlaylistIfNoChapters));
   Add(new cMenuEditBoolItem(tr("Show media title instead of filename"), &SetupShowMediaTitle));
   Add(new cMenuEditBoolItem(tr("Show subtitles"), &SetupShowSubtitles));
+  Add(new cMenuEditBoolItem(tr("Exit at the end"), &SetupExitAtEnd));
   SetCurrent(Get(current));
   Display();
 }
@@ -67,5 +69,6 @@ void cMpvPluginSetup::Store()
     SetupStore("PlaylistIfNoChapters", MpvPluginConfig->PlaylistIfNoChapters = SetupPlaylistIfNoChapters);
     SetupStore("ShowMediaTitle", MpvPluginConfig->ShowMediaTitle = SetupShowMediaTitle);
     SetupStore("ShowSubtitles", MpvPluginConfig->ShowSubtitles = SetupShowSubtitles);
+    SetupStore("Exit at the end", MpvPluginConfig->ExitAtEnd = SetupExitAtEnd);
 }
 

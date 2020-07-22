@@ -24,6 +24,7 @@ cMpvPluginConfig::cMpvPluginConfig()
   PlaylistIfNoChapters = 1;
   ShowMediaTitle = 0;
   ShowSubtitles = 0;
+  ExitAtEnd = 1;
 
   BrowserRoot = "/";
   RefreshRate = 0;
@@ -163,6 +164,8 @@ bool cMpvPluginConfig::SetupParse(const char *name, const char *value)
     ShowMediaTitle = atoi(value);
   else if (!strcasecmp(name, "ShowSubtitles"))
     ShowSubtitles = atoi(value);
+  else if (!strcasecmp(name, "ExitAtEnd"))
+    ExitAtEnd = atoi(value);
   else
     return false;
   return true;

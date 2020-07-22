@@ -26,6 +26,7 @@ class cMpvPluginSetup:public cMenuSetupPage
     int SetupPlaylistIfNoChapters;
     int SetupShowMediaTitle;
     int SetupShowSubtitles;
+    int SetupExitAtEnd;
 
   public:
     cMpvPluginSetup();

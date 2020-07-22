@@ -39,6 +39,7 @@ class cMpvPluginConfig
     int PlaylistIfNoChapters;       // skip to next playlist item if the file has no chapters
     int ShowMediaTitle;             // show title from media file instead of filename
     int ShowSubtitles;              // show subtitles
+    int ExitAtEnd;                  // exit at the end
 
     // plugin parameter variables
     string BrowserRoot;             // start dir for filebrowser
