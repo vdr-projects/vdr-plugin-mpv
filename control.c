@@ -53,6 +53,7 @@ cMpvControl::~cMpvControl()
   delete Player;
   Player = NULL;
   player = NULL;
+  if (remove ("/tmp/mpv.playlist")) dsyslog ("[mpv] Playlist was not used\n");
   cDevice::SetPrimaryDevice(cDevice::PrimaryDevice()->DeviceNumber() + 1);
 }
 

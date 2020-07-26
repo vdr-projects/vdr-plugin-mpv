@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-mpv 0.0.3\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2015-07-05 23:36+0200\n"
+"POT-Creation-Date: 2020-07-26 19:56+1000\n"
 "PO-Revision-Date: 2015-06-29 22:14+0200\n"
 "Last-Translator: Maniac\n"
 "Language-Team: Maniac\n"
@@ -19,6 +19,18 @@ msgstr ""
 #. TRANSLATORS: note the trailing blank!
 msgid "Jump: "
 msgstr "Springe zu:"
+
+msgid "Filebrowser"
+msgstr ""
+
+msgid "Disc"
+msgstr ""
+
+msgid "PlayDir"
+msgstr ""
+
+msgid "Shuffle"
+msgstr ""
 
 msgid "Options"
 msgstr "Optionen"
@@ -34,6 +46,9 @@ msgstr ""
 
 msgid "Hide main menu entry"
 msgstr "Hauptmenüeintrag verstecken"
+
+msgid "Video Deinterlace"
+msgstr ""
 
 msgid "Audio Passthrough"
 msgstr "Audio durchreichen"
@@ -52,6 +67,12 @@ msgstr "Steuere die Playlist wenn keine Kapitel vorhanden"
 
 msgid "Show media title instead of filename"
 msgstr "Media Titel anstatt des Dateinamen anzeigen"
+
+msgid "Show subtitles"
+msgstr ""
+
+msgid "Exit at the end"
+msgstr ""
 
 #~ msgid "Browse"
 #~ msgstr "Durchsuchen"

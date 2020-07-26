@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-mpv 0.0.4\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2020-06-27 20:04+1000\n"
+"POT-Creation-Date: 2020-07-26 19:56+1000\n"
 "PO-Revision-Date: 2020-06-27 20:04+1000\n"
 "Last-Translator: ua0lnj\n"
 "Language-Team: ua0lnj\n"
@@ -25,6 +25,9 @@ msgstr "Просмотр файлов"
 
 msgid "Disc"
 msgstr "Диск"
+
+msgid "PlayDir"
+msgstr "Проиграть"
 
 msgid "Shuffle"
 msgstr "Смешать"
@@ -67,3 +70,6 @@ msgstr "Показ заголовка вместо имени файла"
 
 msgid "Show subtitles"
 msgstr "Показ субтитров"
+
+msgid "Exit at the end"
+msgstr "Выход в конце"

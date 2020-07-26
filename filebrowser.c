@@ -80,11 +80,61 @@ void cMpvFilebrowser::ShowDirectory(string Path)
     MenuTitle += " (" + Path.substr(rootDir.size() + 1, string::npos) + ")";
   SetTitle(MenuTitle.c_str());
 #ifdef USE_DISC
-  SetHelp(tr("Disc"), NULL, tr("Shuffle"), NULL);
+  SetHelp(tr("Disc"), tr("PlayDir"), tr("Shuffle"), NULL);
 #else
-  SetHelp(NULL, NULL, tr("Shuffle"), NULL);
+  SetHelp(NULL, tr("PlayDir"), tr("Shuffle"), NULL);
 #endif
   Display();
+}
+
+void cMpvFilebrowser::PlayListCreate(string Path, FILE *fdPl)
+{
+  Clear();
+  vector<string> PlayDirectories;
+  vector<string> PlayFiles;
+
+  DIR *playDir;
+  struct dirent *Entry;
+
+  playDir = opendir(Path.c_str());
+  // do not crash if browser root directory absent
+  if (!playDir)
+  {
+    esyslog("[mpv] No play directory!\n");
+    return;
+  }
+  while ((Entry = readdir(playDir)) != NULL)
+  {
+    if (!Entry || Entry->d_name[0] == '.')
+      continue;
+
+    struct stat Stat;
+    string Filename = Path + "/" + Entry->d_name;
+    stat(Filename.c_str(), &Stat);
+
+    if (S_ISDIR(Stat.st_mode))
+      PlayDirectories.push_back(Entry->d_name);
+
+    else if (S_ISREG(Stat.st_mode))
+      PlayFiles.push_back(Entry->d_name);
+  }
+  closedir(playDir);
+
+  sort(PlayDirectories.begin(), PlayDirectories.end());
+  sort(PlayFiles.begin(), PlayFiles.end());
+
+
+  for (unsigned int i=0; i<PlayDirectories.size(); i++)
+  {
+    string Filedir = Path + "/" + PlayDirectories[i];
+    PlayListCreate(Filedir, fdPl);
+  }
+
+  for (unsigned int i=0; i<PlayFiles.size(); i++)
+  {
+    string Filename = Path + "/" + PlayFiles[i];
+    fprintf(fdPl, "%s\n", Filename.c_str());
+  }
 }
 
 void cMpvFilebrowser::AddItem(string Path, string Text, bool IsDir)
@@ -154,6 +204,32 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
         return osEnd;
       }
       return osContinue;
+
+    case kGreen:
+      item = (cMpvFilebrowserMenuItem *) Get(Current());
+      newPath = item->Path() + "/" + item->Text();
+      if (item->IsDirectory())
+      {
+        currentDir = newPath;
+        currentItem = "";
+        FILE *fdPl = fopen ("/tmp/mpv.playlist", "w");
+        if (!fdPl)
+        {
+          esyslog ("[mpv] Playlist creation error!\n");
+          return osEnd;
+        }
+        PlayListCreate(newPath, fdPl);
+        fclose (fdPl);
+        PlayFile("/tmp/mpv.playlist");
+        return osEnd;
+      }
+      else
+      {
+        currentItem = item->Text();
+        PlayFile(newPath);
+        return osEnd;
+      }
+    break;
 
     default:
     break;

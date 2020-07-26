@@ -69,6 +69,6 @@ void cMpvPluginSetup::Store()
     SetupStore("PlaylistIfNoChapters", MpvPluginConfig->PlaylistIfNoChapters = SetupPlaylistIfNoChapters);
     SetupStore("ShowMediaTitle", MpvPluginConfig->ShowMediaTitle = SetupShowMediaTitle);
     SetupStore("ShowSubtitles", MpvPluginConfig->ShowSubtitles = SetupShowSubtitles);
-    SetupStore("Exit at the end", MpvPluginConfig->ExitAtEnd = SetupExitAtEnd);
+    SetupStore("ExitAtEnd", MpvPluginConfig->ExitAtEnd = SetupExitAtEnd);
 }
 
