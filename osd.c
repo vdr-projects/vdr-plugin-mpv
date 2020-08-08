@@ -33,9 +33,14 @@ cMpvOsd::cMpvOsd(int Left, int Top, uint Level, cMpvPlayer *player)
   int OsdAreaWidth = OsdWidth() + cOsd::Left();
   int OsdAreaHeight = OsdHeight() + cOsd::Top();
   fdOsd = open ("/tmp/vdr_mpv_osd", O_CREAT | O_RDWR, S_IWUSR | S_IRUSR);
+  if (fdOsd < 0)
+  {
+    esyslog("[mpv] ERROR! no access to /tmp, no OSD!\n");
+    pOsd = NULL;
+  }
   lseek(fdOsd, OsdAreaWidth*OsdAreaHeight*4, SEEK_SET);
   int ret=write(fdOsd, "", 1);
-  if (ret)
+  if (ret > 0)
       pOsd = (char*) mmap (NULL, OsdAreaWidth*OsdAreaHeight*4, PROT_WRITE, MAP_SHARED, fdOsd, 0);
 #ifdef DEBUG
   dsyslog("[mpv] Osd %d %d \n",fdOsd,ret);
@@ -76,7 +81,7 @@ void cMpvOsd::SetActive(bool On)
 
 void cMpvOsd::WriteToMpv(int sw, int sh, int x, int y, int w, int h, const uint8_t * argb)
 {
-  if (!cMpvPlayer::PlayerIsRunning())
+  if (!cMpvPlayer::PlayerIsRunning() || !pOsd)
     return;
   int sx;
   int sy;
