@@ -97,7 +97,7 @@ void cMpvFilebrowser::PlayListCreate(string Path, FILE *fdPl)
   struct dirent *Entry;
 
   playDir = opendir(Path.c_str());
-  // do not crash if browser root directory absent
+  // do not crash if browser play directory absent
   if (!playDir)
   {
     esyslog("[mpv] No play directory!\n");
@@ -122,7 +122,6 @@ void cMpvFilebrowser::PlayListCreate(string Path, FILE *fdPl)
 
   sort(PlayDirectories.begin(), PlayDirectories.end());
   sort(PlayFiles.begin(), PlayFiles.end());
-
 
   for (unsigned int i=0; i<PlayDirectories.size(); i++)
   {
@@ -210,8 +209,6 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
       newPath = item->Path() + "/" + item->Text();
       if (item->IsDirectory())
       {
-        currentDir = newPath;
-        currentItem = "";
         FILE *fdPl = fopen ("/tmp/mpv.playlist", "w");
         if (!fdPl)
         {

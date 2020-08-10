@@ -30,6 +30,8 @@ using std::vector;
 #define MPV_OBSERVE_PAUSE 8
 #define MPV_OBSERVE_SPEED 9
 #define MPV_OBSERVE_MEDIA_TITLE 10
+#define MPV_OBSERVE_LIST_POS 11
+#define MPV_OBSERVE_LIST_COUNT 12
 
 volatile int cMpvPlayer::running = 0;
 cMpvPlayer *cMpvPlayer::PlayerHandle = NULL;
@@ -60,6 +62,8 @@ void *cMpvPlayer::ObserverThread(void *handle)
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_PAUSE, "pause", MPV_FORMAT_FLAG);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_SPEED, "speed", MPV_FORMAT_DOUBLE);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_MEDIA_TITLE, "media-title", MPV_FORMAT_STRING);
+  mpv_observe_property(Player->hMpv, MPV_OBSERVE_LIST_POS, "playlist-pos-1", MPV_FORMAT_INT64);
+  mpv_observe_property(Player->hMpv, MPV_OBSERVE_LIST_COUNT, "playlist-count", MPV_FORMAT_INT64);
 
   while (Player->PlayerIsRunning())
   {
@@ -371,6 +375,14 @@ void cMpvPlayer::HandlePropertyChange(mpv_event *event)
 
     case MPV_OBSERVE_MEDIA_TITLE :
       mediaTitle = *(char**)property->data;
+    break;
+
+    case MPV_OBSERVE_LIST_POS :
+      ListCurrent = (int)*(int64_t*)property->data;
+    break;
+
+    case MPV_OBSERVE_LIST_COUNT :
+      ListTotal = (int)*(int64_t*)property->data;
     break;
   }
 }

@@ -93,6 +93,7 @@ void cMpvOsd::WriteToMpv(int sw, int sh, int x, int y, int w, int h, const uint8
       pos=0;
       pos = pos + ((sy+y)*sw*4);
       pos = pos + ((sx+x)*4);
+      if (pos > (OsdWidth() + cOsd::Left())*(OsdHeight() + cOsd::Top())*4) break; //memory overflow prevention
       pOsd[pos + 0] = argb[(w * sy + sx) * 4 + 0];
       pOsd[pos + 1] = argb[(w * sy + sx) * 4 + 1];
       pOsd[pos + 2] = argb[(w * sy + sx) * 4 + 2];

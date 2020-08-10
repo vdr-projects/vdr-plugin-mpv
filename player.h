@@ -49,6 +49,8 @@ class cMpvPlayer:public cPlayer
     string mediaTitle;                // title from meta data
     static cMpvPlayer *PlayerHandle;  // our player
     static volatile int running;
+    int ListCurrent;                  // position in playlist
+    int ListTotal;                    // number of positions in playlist
 
   public:
     cMpvPlayer(string Filename, bool Shuffle=false);
@@ -94,6 +96,8 @@ class cMpvPlayer:public cPlayer
     int CurrentChapter() { return PlayerChapter + 1; } // return the current value +1 since mpv begins at 0
     int CurrentPlayTime() { return PlayerCurrent; }
     int TotalPlayTime() { return PlayerTotal; }
+    int CurrentListPos() { return ListCurrent; }
+    int TotalListPos() { return ListTotal; }
     int CurrentFps() { return PlayerFps; }
     string CurrentFile() { return PlayerFilename; }
     int CurrentPlaybackSpeed() { return PlayerSpeed; }

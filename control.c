@@ -57,7 +57,7 @@ cMpvControl::~cMpvControl()
   cDevice::SetPrimaryDevice(cDevice::PrimaryDevice()->DeviceNumber() + 1);
 }
 
-void cMpvControl::ShowProgress(void)
+void cMpvControl::ShowProgress(int playlist)
 {
   if (!Player->IsPaused() && LastPlayerCurrent == Player->CurrentPlayTime())
     return;
@@ -74,6 +74,9 @@ void cMpvControl::ShowProgress(void)
   }
 
   string TitleDisplay = Player->CurrentFile();
+  if (Player->TotalListPos() > 1 && !playlist)
+    TitleDisplay = std::string(itoa(Player->CurrentListPos())) + " " + TitleDisplay;
+
   if (MpvPluginConfig->TitleOverride != "")
     TitleDisplay = MpvPluginConfig->TitleOverride;
   else if (MpvPluginConfig->ShowMediaTitle && Player->MediaTitle() != "")
@@ -91,14 +94,27 @@ void cMpvControl::ShowProgress(void)
   }
 
   DisplayReplay->SetTitle(TitleDisplay.c_str());
-  DisplayReplay->SetProgress(Player->CurrentPlayTime(), Player->TotalPlayTime());
+
+  if (playlist)
+    DisplayReplay->SetProgress(Player->CurrentListPos(), Player->TotalListPos());
+  else
+    DisplayReplay->SetProgress(Player->CurrentPlayTime(), Player->TotalPlayTime());
+
   int Speed = Player->CurrentPlaybackSpeed();
   if (Speed == 1)
     Speed = -1;
   DisplayReplay->SetMode(!Player->IsPaused(), true, Speed);
+
+  if (playlist)
+{
+  DisplayReplay->SetCurrent(itoa(Player->CurrentListPos()));
+  DisplayReplay->SetTotal(itoa(Player->TotalListPos()));
+}
+else
+{
   DisplayReplay->SetCurrent(IndexToHMSF(Player->CurrentPlayTime(), false, 1));
   DisplayReplay->SetTotal(IndexToHMSF(Player->TotalPlayTime(), false, 1));
-
+}
   SetNeedsFastResponse(true);
   Skins.Flush();
 }
@@ -116,6 +132,7 @@ void cMpvControl::Hide()
 eOSState cMpvControl::ProcessKey(eKeys key)
 {
   eOSState state;
+  static int count;
 #ifdef DEBUG
   if (key != kNone)
   {
@@ -141,7 +158,7 @@ eOSState cMpvControl::ProcessKey(eKeys key)
     Hide();
   }
   else if (infoVisible) // if RecordingInfo visible then update
-    ShowProgress();
+    ShowProgress(count % 2);
 
   state = osContinue;
   switch ((int)key) // cast to shutup g++ warnings
@@ -231,13 +248,18 @@ eOSState cMpvControl::ProcessKey(eKeys key)
         Player->DiscNavSelect();
         break;
       }
-      if (infoVisible)
+      if (infoVisible && (count > 1))
       {
+        count = 0;
         Hide();
         infoVisible = false;
       }
       else
-        ShowProgress();
+      {
+        if (Player->TotalListPos() <= 1) count++;
+        count++;
+        ShowProgress(count % 2);
+      }
     break;
 
     case k5:

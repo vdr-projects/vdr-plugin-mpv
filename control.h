@@ -18,7 +18,7 @@ class cMpvControl:public cControl
   private:
     cMpvPlayer *Player;                 // our player
     cSkinDisplayReplay *DisplayReplay;  // our osd display
-    void ShowProgress();                // display progress bar
+    void ShowProgress(int playlist = 0);    // display progress bar
     void Hide();                        // hide replay control
     bool infoVisible;                   // RecordingInfo visible
     int LastPlayerCurrent;              // the lasz cuurent time the osd was rendered with
