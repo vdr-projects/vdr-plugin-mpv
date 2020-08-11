@@ -88,7 +88,12 @@ void cMpvControl::ShowProgress(int playlist)
       TitleDisplay += " - " + Player->ChapterTitle(Player->CurrentChapter());
 
     char buffer[10];
-    snprintf (buffer, sizeof(buffer), " (%d/%d)", Player->CurrentChapter(), Player->NumChapters());
+    int err = snprintf (buffer, sizeof(buffer), " (%d/%d)", Player->CurrentChapter(), Player->NumChapters());
+    if (err < 0)
+    {
+      esyslog ("[mpv] ShowProgress TitleDisplay error!\n");
+      return;
+    }
     TitleDisplay += buffer;
     DisplayReplay->SetMarks(Marks());
   }
