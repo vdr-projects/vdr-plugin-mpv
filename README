@@ -2,6 +2,7 @@ This is a "plugin" for the Video Disk Recorder (VDR).
 
 Copyright (c) 2012, 2013 by Johns.  All Rights Reserved.
 Copyright (c) 2013 - 2015 by Maniac.  All Rights Reserved.
+Copyright (c) 2020 by ua0lnj.  All Rights Reserved.
 
 License: AGPLv3
 
@@ -19,7 +20,7 @@ Description
 -----------
 
 vdr-mpv is a fork of the vdr-play plugin from Johns. It uses libmpv for playing
-media in VDR and also displays the VDR OSD (On Screen Display) during playback.
+media (video, audio, picture) in VDR and also displays the VDR OSD (On Screen Display) during playback.
 
 Requirements
 ------------
@@ -113,6 +114,11 @@ Plugin setup options
 
 Remote control keys
 -------------------
+In the browser mode you can use
+
+Red:                    Play selected file
+Green:                  Play selected directory, playlist mode
+Yellow:                 Shuffle playlist
 
 The following remote keys are supported in normal operation (no disc menu active)
 
@@ -126,7 +132,8 @@ Yellow:                 Seek 60 seconds forward
 Blue:                   Show menu with current playback options
 Stop, Back:             Stop playback
 Ok:                     Display current playback status or close status display
-                        if currently open
+                        if currently open. In playlist mode display current and
+                        total playlist positions
 5:                      Open disc nav menu
 7:                      Previous playlist item
 9:                      Next playlist item

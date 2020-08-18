@@ -80,9 +80,9 @@ void cMpvFilebrowser::ShowDirectory(string Path)
     MenuTitle += " (" + Path.substr(rootDir.size() + 1, string::npos) + ")";
   SetTitle(MenuTitle.c_str());
 #ifdef USE_DISC
-  SetHelp(tr("Disc"), tr("PlayDir"), tr("Shuffle"), NULL);
+  SetHelp(tr("Disc"), Directories.size() ? tr("PlayDir") : NULL, tr("Shuffle"), NULL);
 #else
-  SetHelp(NULL, tr("PlayDir"), tr("Shuffle"), NULL);
+  SetHelp(NULL, Directories.size() ? tr("PlayDir") : NULL, tr("Shuffle"), NULL);
 #endif
   Display();
 }
@@ -186,6 +186,11 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
       State = cOsdMenu::ProcessKey(Key);
       item = (cMpvFilebrowserMenuItem *) Get(Current());
       currentItem = item->Text();
+#ifdef USE_DISC
+      SetHelp(tr("Disc"), item->IsDirectory() ? tr("PlayDir") : NULL, tr("Shuffle"), NULL);
+#else
+      SetHelp(NULL, item->IsDirectory() ? tr("PlayDir") : NULL, tr("Shuffle"), NULL);
+#endif
     return State;
 
     case kRed:
@@ -218,12 +223,6 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
         PlayListCreate(newPath, fdPl);
         fclose (fdPl);
         PlayFile("/tmp/mpv.playlist");
-        return osEnd;
-      }
-      else
-      {
-        currentItem = item->Text();
-        PlayFile(newPath);
         return osEnd;
       }
     break;

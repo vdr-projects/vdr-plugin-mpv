@@ -74,13 +74,14 @@ void cMpvControl::ShowProgress(int playlist)
   }
 
   string TitleDisplay = Player->CurrentFile();
-  if (Player->TotalListPos() > 1 && !playlist)
-    TitleDisplay = std::string(itoa(Player->CurrentListPos())) + " " + TitleDisplay;
 
   if (MpvPluginConfig->TitleOverride != "")
     TitleDisplay = MpvPluginConfig->TitleOverride;
   else if (MpvPluginConfig->ShowMediaTitle && Player->MediaTitle() != "")
     TitleDisplay = Player->MediaTitle();
+
+  if (Player->TotalListPos() > 1 && !playlist)
+    TitleDisplay = std::string(itoa(Player->CurrentListPos())) + " " + TitleDisplay;
 
   if (Player->NumChapters() > 0)
   {
