@@ -112,8 +112,8 @@ void cMpvOsd::Flush()
   if (!Active())
     return;
 
-  int OsdAreaWidth = Width() + Left();
-  int OsdAreaHeight = Height()+ Top();
+  int OsdAreaWidth = OsdWidth() + cOsd::Left();
+  int OsdAreaHeight = OsdHeight()+ cOsd::Top();
 
   if (IsTrueColor())
   {
