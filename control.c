@@ -104,7 +104,7 @@ void cMpvControl::ShowProgress(int playlist)
   if (playlist)
     DisplayReplay->SetProgress(Player->CurrentListPos(), Player->TotalListPos());
   else
-    DisplayReplay->SetProgress(Player->CurrentPlayTime(), Player->TotalPlayTime());
+    DisplayReplay->SetProgress(Player->CurrentPlayTime(), Player->TotalPlayTime() != 0 ? Player->TotalPlayTime() : 1);
 
   int Speed = Player->CurrentPlaybackSpeed();
   if (Speed == 1)
