@@ -67,6 +67,9 @@ Command line arguments
 -b /dir
   file browser root directory
 
+-x extensions for playlists
+  files with this extensions are handled as playlists (Default: m3u,ini,pls,txt,playlist)
+
 -r
   switch modeline to refresh rate of played file
   xrandr is needed for this to work. If no xrandr is detected during compile time
@@ -80,8 +83,12 @@ Command line arguments
   loaded
 
 -g
+-g geometry
   normally mpv use EGL for hwdec=gpu and can not works with X11, if this parameter is set
-  mpv use GLX for hwdec=gpu and can works with X11
+  mpv use GLX for hwdec=gpu and can works with X11.
+  Latest mpv set X11 GLX deprecated, you need configure mpw with --enable-gl-x11.
+  You can set X11 geometry with this parameter [W[xH]][+-x+-y][/WS] or x:y.
+  But size of OSD get from softhddevice geometry!!!
 
 Plugin setup options
 --------------------

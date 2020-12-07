@@ -222,6 +222,14 @@ void cMpvPlayer::PlayerStart()
   {
       check_error(mpv_set_option_string(hMpv, "gpu-context", "x11"));
   }
+  if (strcmp(MpvPluginConfig->Geometry.c_str(),""))
+  {
+    check_error(mpv_set_option_string(hMpv, "geometry", MpvPluginConfig->Geometry.c_str()));
+  }
+  else
+  {
+    check_error(mpv_set_option_string(hMpv, "fullscreen", "yes"));
+  }
   if (MpvPluginConfig->UseDeinterlace)
   {
     if (!strcmp(MpvPluginConfig->HwDec.c_str(),"vaapi"))
@@ -242,7 +250,6 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "slang", MpvPluginConfig->Languages.c_str()));
   check_error(mpv_set_option_string(hMpv, "alang", MpvPluginConfig->Languages.c_str()));
   check_error(mpv_set_option_string(hMpv, "cache", "no")); // video stutters if enabled
-  check_error(mpv_set_option_string(hMpv, "fullscreen", "yes"));
   check_error(mpv_set_option_string(hMpv, "sub-visibility", MpvPluginConfig->ShowSubtitles ? "yes" : "no"));
   check_error(mpv_set_option_string(hMpv, "sub-forced-only", "yes"));
   check_error(mpv_set_option_string(hMpv, "sub-auto", "all"));

@@ -39,6 +39,7 @@ cMpvPluginConfig::cMpvPluginConfig()
   NoScripts = 0;
 
   X11Display = ":0.0";
+  Geometry = "";
 }
 
 vector<string> cMpvPluginConfig::ExplodeString(string Input)
@@ -67,7 +68,7 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
 
   for (;;)
   {
-    switch (getopt(argc, argv, "a:v:h:d:b:l:x:rm:sg"))
+    switch (getopt(argc, argv, "a:v:h:d:b:l:x:rm:sg:"))
     {
       case 'a': // audio out
         AudioOut = optarg;
@@ -99,7 +100,8 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
       case 's':
         NoScripts = 1;
       continue;
-      case 'g': // glx with x11
+      case 'g': // glx with x11 and geometry
+        Geometry = optarg;
         UseGlx = 1;
       continue;
       case EOF:
@@ -108,6 +110,11 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
         esyslog("[mpv]: missing argument for option '%c'\n", optopt);
         return 0;
       default:
+        if (optopt == 'g') //glx with x11
+        {
+          UseGlx = 1;
+          continue;
+        }
         esyslog("[mpv]: unknown option '%c'\n", optopt);
         return 0;
     }
@@ -141,6 +148,7 @@ const char *cMpvPluginConfig::CommandLineHelp(void)
     "  -m text\ttext displayed in VDR main menu (Default: MPV)\n"
     "  -s\t\tdon't load mpv LUA scripts\n"
     "  -g\t\tuse GLX with X11\n"
+    "  -g geometry\t X11 geometry [W[xH]][+-x+-y][/WS] or x:y\n"
     ;
 }
 
