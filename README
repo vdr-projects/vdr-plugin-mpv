@@ -82,11 +82,14 @@ Command line arguments
   normally mpv tries to autoload LUA scripts, if this parameter is set no scripts are
   loaded
 
+-w
+   windowed mode, not fullscreen
+
 -g
 -g geometry
   normally mpv use EGL for hwdec=gpu and can not works with X11, if this parameter is set
   mpv use GLX for hwdec=gpu and can works with X11.
-  Latest mpv set X11 GLX deprecated, you need configure mpw with --enable-gl-x11.
+  Latest mpv set X11 GLX deprecated, you need configure mpv with --enable-gl-x11.
   You can set X11 geometry with this parameter [W[xH]][+-x+-y][/WS] or x:y.
   But size of OSD get from softhddevice geometry!!!
 

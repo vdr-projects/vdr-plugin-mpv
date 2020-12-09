@@ -40,6 +40,7 @@ cMpvPluginConfig::cMpvPluginConfig()
 
   X11Display = ":0.0";
   Geometry = "";
+  Windowed = 0;
 }
 
 vector<string> cMpvPluginConfig::ExplodeString(string Input)
@@ -68,7 +69,7 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
 
   for (;;)
   {
-    switch (getopt(argc, argv, "a:v:h:d:b:l:x:rm:sg:"))
+    switch (getopt(argc, argv, "a:v:h:d:b:l:x:rm:swg:"))
     {
       case 'a': // audio out
         AudioOut = optarg;
@@ -99,6 +100,9 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
       continue;
       case 's':
         NoScripts = 1;
+      continue;
+      case 'w':
+        Windowed = 1;
       continue;
       case 'g': // glx with x11 and geometry
         Geometry = optarg;

@@ -226,7 +226,7 @@ void cMpvPlayer::PlayerStart()
   {
     check_error(mpv_set_option_string(hMpv, "geometry", MpvPluginConfig->Geometry.c_str()));
   }
-  else
+  if (!MpvPluginConfig->Windowed)
   {
     check_error(mpv_set_option_string(hMpv, "fullscreen", "yes"));
   }
