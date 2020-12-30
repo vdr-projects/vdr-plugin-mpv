@@ -420,3 +420,8 @@ void cMpvControl::SeekRelative(int seconds)
 {
   Player->Seek(seconds);
 }
+
+void cMpvControl::ScaleVideo(int x, int y, int width, int height)
+{
+  Player->ScaleVideo(x, y, width, height);
+}

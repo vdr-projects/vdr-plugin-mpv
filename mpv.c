@@ -19,7 +19,7 @@
 #include "menu_options.h"
 #include "mpv_service.h"
 
-static const char *VERSION = "0.0.9"
+static const char *VERSION = "0.1.0"
 #ifdef GIT_REV
     "-GIT" GIT_REV
 #endif
@@ -78,7 +78,8 @@ bool cMpvPlugin::Service(const char *id, void *data)
     Mpv_Seek *seekInfo = (Mpv_Seek *)data;
 
     cMpvControl* control = dynamic_cast<cMpvControl*>(cControl::Control(true));
-		if(control) {
+    if(control)
+    {
       if(seekInfo->SeekRelative != 0)
       {
           control->SeekRelative(seekInfo->SeekRelative);
@@ -87,7 +88,17 @@ bool cMpvPlugin::Service(const char *id, void *data)
       {
         control->SeekTo(seekInfo->SeekAbsolute);
       }
-		}
+    }
+    return true;
+  }
+  if (strcmp(id, "ScaleVideo") == 0)
+  {
+    Mpv_ScaleVideo *scaleVideo = (Mpv_ScaleVideo *)data;
+    cMpvControl* control = dynamic_cast<cMpvControl*>(cControl::Control(true));
+    if(control)
+    {
+        control->ScaleVideo(scaleVideo->x, scaleVideo->y, scaleVideo->width, scaleVideo->height);
+    }
     return true;
   }
   if (strcmp(id, "Mpv_PlayFile") == 0)

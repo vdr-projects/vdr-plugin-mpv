@@ -40,6 +40,7 @@ class cMpvControl:public cControl
     void UpdateMarks();
     void SeekTo(int seconds);
     void SeekRelative(int seconds);
+    void ScaleVideo(int x, int y, int width, int height);
 };
 
 #endif

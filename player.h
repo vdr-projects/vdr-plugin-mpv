@@ -88,6 +88,7 @@ class cMpvPlayer:public cPlayer
     void NextPlaylistItem();
     void PreviousPlaylistItem();
     void SetVolume(int Volume);
+    void ScaleVideo(int x, int y, int width, int height);
 
     // functions to get different status information about the current playback
     int IsPaused() { return PlayerPaused; }

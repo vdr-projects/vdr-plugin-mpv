@@ -49,4 +49,11 @@ typedef struct
   int SeekRelative;
 } Mpv_Seek;
 
+typedef struct
+{
+  int x;
+  int y;
+  int width;
+  int height;
+} Mpv_ScaleVideo;
 #endif
