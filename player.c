@@ -578,6 +578,12 @@ void cMpvPlayer::SendCommand(const char *cmd, ...)
   mpv_command_string(hMpv, buf);
 }
 
+void cMpvPlayer::PlayNew(string Filename)
+{
+  const char *cmd[] = {"loadfile", Filename.c_str(), NULL};
+  mpv_command(hMpv, cmd);
+}
+
 void cMpvPlayer::Seek(int Seconds)
 {
   SendCommand("seek %d\n", Seconds);

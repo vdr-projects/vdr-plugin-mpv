@@ -58,6 +58,8 @@ class cMpvPluginConfig
     string TitleOverride;           // title to display (ovveride used via service interface)
     string Geometry;                // X11 display geometry
     int Windowed;                   // windowed mode, not fullscreen
+
+    int ShowOptions;                // switch show menu options or filebrowser menu
 };
 
 // only create one instance (done in mpv.c), all other calls will simply get the extern reference

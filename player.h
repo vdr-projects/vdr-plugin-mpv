@@ -68,6 +68,7 @@ class cMpvPlayer:public cPlayer
 
     // functions to send commands to mpv
     void SendCommand(const char *cmd, ...);
+    void PlayNew(string Filename);
     void Seek(int Seconds); // seek n seconds
     void SetTimePos(int Seconds);
     void SetSpeed(int Speed);

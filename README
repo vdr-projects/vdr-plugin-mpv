@@ -140,10 +140,11 @@ Red:                    Time search functionality like used in VDR recordings
 Green:                  Seek 60 seconds backwards
 Yellow:                 Seek 60 seconds forward
 Blue:                   Show menu with current playback options
-Stop, Back:             Stop playback
+Stop:                   Stop playback
+Back:                   Show the browser menu from where the last file was launched
 Ok:                     Display current playback status or close status display
                         if currently open. In playlist mode display current and
-                        total playlist positions
+                        total playlist positions. Start playback new file
 5:                      Open disc nav menu
 7:                      Previous playlist item
 9:                      Next playlist item

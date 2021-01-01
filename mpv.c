@@ -19,7 +19,7 @@
 #include "menu_options.h"
 #include "mpv_service.h"
 
-static const char *VERSION = "0.1.0"
+static const char *VERSION = "0.2.0"
 #ifdef GIT_REV
     "-GIT" GIT_REV
 #endif
@@ -32,7 +32,7 @@ static const char *DESCRIPTION = trNOOP("mpv player plugin");
 class cMpvPlugin:public cPlugin
 {
   private:
-    void PlayFile(string Filename, bool Shuffle=false) { cControl::Launch(new cMpvControl(Filename.c_str(), Shuffle)); }
+    void PlayFile(string Filename, bool Shuffle=false);
     bool IsIsoImage(string Filename);
     void PlayFileHandleType(string Filename, bool Shuffle=false);
 
@@ -54,6 +54,18 @@ class cMpvPlugin:public cPlugin
     virtual cString SVDRPCommand(const char *Command, const char *Option, int &ReplayCode);
 };
 
+void cMpvPlugin::PlayFile(string Filename, bool Shuffle)
+{
+  if (!cMpvPlayer::PlayerIsRunning())
+    cControl::Launch(new cMpvControl(Filename.c_str(), Shuffle));
+  else
+  {
+    cMpvControl* control = dynamic_cast<cMpvControl*>(cControl::Control(true));
+    if(control)
+      control->PlayNew(Filename.c_str());
+  }
+}
+
 cMpvPlugin::cMpvPlugin(void)
 {
   MpvPluginConfig = new cMpvPluginConfig();
@@ -67,7 +79,12 @@ cMpvPlugin::~cMpvPlugin(void)
 cOsdObject *cMpvPlugin::MainMenuAction(void)
 {
   if (cMpvPlayer::PlayerIsRunning())
-    return new cMpvMenuOptions(cMpvPlayer::Player());
+  {
+    if (!MpvPluginConfig->ShowOptions)
+      return new cMpvFilebrowser(MpvPluginConfig->BrowserRoot, MpvPluginConfig->DiscDevice);
+    else
+      return new cMpvMenuOptions(cMpvPlayer::Player());
+  }
   return new cMpvFilebrowser(MpvPluginConfig->BrowserRoot, MpvPluginConfig->DiscDevice);
 }
 

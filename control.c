@@ -233,6 +233,7 @@ eOSState cMpvControl::ProcessKey(eKeys key)
     break;
 
     case kBlue:
+      MpvPluginConfig->ShowOptions = 1;
       cRemote::CallPlugin("mpv");
     break;
 
@@ -242,6 +243,9 @@ eOSState cMpvControl::ProcessKey(eKeys key)
         Player->DiscNavPrev();
         break;
       }
+      MpvPluginConfig->ShowOptions = 0;
+      cRemote::CallPlugin("mpv");
+      break;
     case kStop:
       Hide();
       Player->QuitPlayer();
@@ -409,6 +413,11 @@ void cMpvControl::TimeSearchProcess(eKeys Key)
         DisplayReplay->SetJump(NULL);
 //     ShowProgress();
      }
+}
+
+void cMpvControl::PlayNew(string Filename)
+{
+  Player->PlayNew(Filename);
 }
 
 void cMpvControl::SeekTo(int seconds)

@@ -38,6 +38,7 @@ class cMpvControl:public cControl
     virtual eOSState ProcessKey(eKeys); // handle keyboard input
     cMarks *Marks() { return &ChapterMarks; }
     void UpdateMarks();
+    void PlayNew(string Filename);
     void SeekTo(int seconds);
     void SeekRelative(int seconds);
     void ScaleVideo(int x, int y, int width, int height);

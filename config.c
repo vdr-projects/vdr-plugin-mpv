@@ -41,6 +41,7 @@ cMpvPluginConfig::cMpvPluginConfig()
   X11Display = ":0.0";
   Geometry = "";
   Windowed = 0;
+  ShowOptions = 0;
 }
 
 vector<string> cMpvPluginConfig::ExplodeString(string Input)
