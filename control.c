@@ -203,9 +203,9 @@ eOSState cMpvControl::ProcessKey(eKeys key)
         break;
       }
     case kFastRew:
-      // reset to normal playback speed (if fastfwd is active currently) and then just go back 10 seconds since there is no fastrew in mpv
+      // reset to normal playback speed (if fastfwd is active currently) and then just go back 5 seconds since there is no fastrew in mpv
       Player->SetSpeed(1);
-      Player->Seek(-10);
+      Player->Seek(-5);
     break;
     case kRight:
       if (Player->DiscNavActive())
@@ -288,6 +288,15 @@ eOSState cMpvControl::ProcessKey(eKeys key)
         Player->PreviousPlaylistItem();
       else
         Player->PreviousChapter();
+    break;
+
+    case k1 | k_Repeat:
+    case k1:
+      Player->Seek(-15);
+    break;
+    case k3 | k_Repeat:
+    case k3:
+      Player->Seek(+15);
     break;
 
     case k7:
