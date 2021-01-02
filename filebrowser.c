@@ -108,6 +108,10 @@ void cMpvFilebrowser::PlayListCreate(string Path, FILE *fdPl)
     if (!Entry || Entry->d_name[0] == '.')
       continue;
 
+    //excluding resume files
+    string ex = Entry->d_name;
+    if (!ex.find("resume")) continue;
+
     struct stat Stat;
     string Filename = Path + "/" + Entry->d_name;
     stat(Filename.c_str(), &Stat);
