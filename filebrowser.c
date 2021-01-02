@@ -153,6 +153,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
   {
     case kOk:
       item = (cMpvFilebrowserMenuItem *) Get(Current());
+      if (!item) break;
       newPath = item->Path() + "/" + item->Text();
       if (item->IsDirectory())
       {
