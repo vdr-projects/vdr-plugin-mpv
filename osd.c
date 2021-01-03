@@ -33,16 +33,26 @@ cMpvOsd::cMpvOsd(int Left, int Top, uint Level, cMpvPlayer *player)
   int OsdAreaWidth = OsdWidth() + cOsd::Left();
   int OsdAreaHeight = OsdHeight() + cOsd::Top();
   fdOsd = open ("/tmp/vdr_mpv_osd", O_CREAT | O_RDWR, S_IWUSR | S_IRUSR);
+  if (fdOsd < 0)
+  {
+    esyslog("[mpv] ERROR! no access to /tmp, no OSD!\n");
+    pOsd = NULL;
+  }
   lseek(fdOsd, OsdAreaWidth*OsdAreaHeight*4, SEEK_SET);
-  write(fdOsd, "", 1);
-  pOsd = (char*) mmap (NULL, OsdAreaWidth*OsdAreaHeight*4, PROT_WRITE, MAP_SHARED, fdOsd, 0);
-
+  int ret=write(fdOsd, "", 1);
+  if (ret > 0)
+      pOsd = (char*) mmap (NULL, OsdAreaWidth*OsdAreaHeight*4, PROT_WRITE, MAP_SHARED, fdOsd, 0);
+#ifdef DEBUG
+  dsyslog("[mpv] Osd %d %d \n",fdOsd,ret);
+#endif
   SetActive(true);
 }
 
 cMpvOsd::~cMpvOsd()
 {
+#ifdef DEBUG
   dsyslog("[mpv] %s\n", __FUNCTION__);
+#endif
   SetActive(false);
 
   if (cMpvPlayer::PlayerIsRunning())
@@ -71,7 +81,7 @@ void cMpvOsd::SetActive(bool On)
 
 void cMpvOsd::WriteToMpv(int sw, int sh, int x, int y, int w, int h, const uint8_t * argb)
 {
-  if (!cMpvPlayer::PlayerIsRunning())
+  if (!cMpvPlayer::PlayerIsRunning() || !pOsd)
     return;
   int sx;
   int sy;
@@ -83,6 +93,7 @@ void cMpvOsd::WriteToMpv(int sw, int sh, int x, int y, int w, int h, const uint8
       pos=0;
       pos = pos + ((sy+y)*sw*4);
       pos = pos + ((sx+x)*4);
+      if (pos > (OsdWidth() + cOsd::Left())*(OsdHeight() + cOsd::Top())*4) break; //memory overflow prevention
       pOsd[pos + 0] = argb[(w * sy + sx) * 4 + 0];
       pOsd[pos + 1] = argb[(w * sy + sx) * 4 + 1];
       pOsd[pos + 2] = argb[(w * sy + sx) * 4 + 2];
@@ -101,8 +112,8 @@ void cMpvOsd::Flush()
   if (!Active())
     return;
 
-  int OsdAreaWidth = Width() + Left();
-  int OsdAreaHeight = Height()+ Top();
+  int OsdAreaWidth = OsdWidth() + cOsd::Left();
+  int OsdAreaHeight = OsdHeight()+ cOsd::Top();
 
   if (IsTrueColor())
   {

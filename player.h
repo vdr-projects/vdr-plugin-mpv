@@ -49,6 +49,8 @@ class cMpvPlayer:public cPlayer
     string mediaTitle;                // title from meta data
     static cMpvPlayer *PlayerHandle;  // our player
     static volatile int running;
+    int ListCurrent;                  // position in playlist
+    int ListTotal;                    // number of positions in playlist
 
   public:
     cMpvPlayer(string Filename, bool Shuffle=false);
@@ -57,6 +59,8 @@ class cMpvPlayer:public cPlayer
     virtual void SetAudioTrack(eTrackType Type, const tTrackId *TrackId);
     virtual void SetSubtitleTrack(eTrackType Type, const tTrackId *TrackId);
     virtual bool GetReplayMode(bool &Play, bool &Forward, int &Speed);
+    virtual bool GetIndex(int &Current, int &Total, bool SnapToIFrame = false);
+    virtual double FramesPerSecond();
     void OsdClose();                              // clear or close current OSD
     void Shutdown();
     static volatile int PlayerIsRunning() { return running; }
@@ -64,6 +68,7 @@ class cMpvPlayer:public cPlayer
 
     // functions to send commands to mpv
     void SendCommand(const char *cmd, ...);
+    void PlayNew(string Filename);
     void Seek(int Seconds); // seek n seconds
     void SetTimePos(int Seconds);
     void SetSpeed(int Speed);
@@ -84,6 +89,7 @@ class cMpvPlayer:public cPlayer
     void NextPlaylistItem();
     void PreviousPlaylistItem();
     void SetVolume(int Volume);
+    void ScaleVideo(int x, int y, int width, int height);
 
     // functions to get different status information about the current playback
     int IsPaused() { return PlayerPaused; }
@@ -92,6 +98,8 @@ class cMpvPlayer:public cPlayer
     int CurrentChapter() { return PlayerChapter + 1; } // return the current value +1 since mpv begins at 0
     int CurrentPlayTime() { return PlayerCurrent; }
     int TotalPlayTime() { return PlayerTotal; }
+    int CurrentListPos() { return ListCurrent; }
+    int TotalListPos() { return ListTotal; }
     int CurrentFps() { return PlayerFps; }
     string CurrentFile() { return PlayerFilename; }
     int CurrentPlaybackSpeed() { return PlayerSpeed; }

@@ -16,17 +16,21 @@
 cMpvPluginConfig::cMpvPluginConfig()
 {
   HideMainMenuEntry = 0;
+  UseDeinterlace = 1;
   UsePassthrough = 1;
   UseDtsHdPassthrough = 1;
   StereoDownmix = 0;
   PlaylistOnNextKey = 0;
   PlaylistIfNoChapters = 1;
   ShowMediaTitle = 0;
+  ShowSubtitles = 0;
+  ExitAtEnd = 1;
 
   BrowserRoot = "/";
   RefreshRate = 0;
   VideoOut = "vdpau";
   HwDec = "vdpau";
+  UseGlx = 0;
   AudioOut = "alsa:device=default";
   DiscDevice = "/dev/dvd";
   Languages = "deu,de,ger,eng,en";
@@ -35,6 +39,9 @@ cMpvPluginConfig::cMpvPluginConfig()
   NoScripts = 0;
 
   X11Display = ":0.0";
+  Geometry = "";
+  Windowed = 0;
+  ShowOptions = 0;
 }
 
 vector<string> cMpvPluginConfig::ExplodeString(string Input)
@@ -63,7 +70,7 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
 
   for (;;)
   {
-    switch (getopt(argc, argv, "a:v:h:d:b:l:x:rm:s"))
+    switch (getopt(argc, argv, "a:v:h:d:b:l:x:rm:swg:"))
     {
       case 'a': // audio out
         AudioOut = optarg;
@@ -95,13 +102,25 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
       case 's':
         NoScripts = 1;
       continue;
+      case 'w':
+        Windowed = 1;
+      continue;
+      case 'g': // glx with x11 and geometry
+        Geometry = optarg;
+        UseGlx = 1;
+      continue;
       case EOF:
       break;
       case ':':
         esyslog("[mpv]: missing argument for option '%c'\n", optopt);
         return 0;
       default:
-        esyslog("[mpv]: unkown option '%c'\n", optopt);
+        if (optopt == 'g') //glx with x11
+        {
+          UseGlx = 1;
+          continue;
+        }
+        esyslog("[mpv]: unknown option '%c'\n", optopt);
         return 0;
     }
     break;
@@ -133,6 +152,8 @@ const char *cMpvPluginConfig::CommandLineHelp(void)
 #endif
     "  -m text\ttext displayed in VDR main menu (Default: MPV)\n"
     "  -s\t\tdon't load mpv LUA scripts\n"
+    "  -g\t\tuse GLX with X11\n"
+    "  -g geometry\t X11 geometry [W[xH]][+-x+-y][/WS] or x:y\n"
     ;
 }
 
@@ -140,6 +161,8 @@ bool cMpvPluginConfig::SetupParse(const char *name, const char *value)
 {
   if (!strcasecmp(name, "HideMainMenuEntry"))
     HideMainMenuEntry = atoi(value);
+  else if (!strcasecmp(name, "UseDeinterlace"))
+    UseDeinterlace = atoi(value);
   else if (!strcasecmp(name, "UsePassthrough"))
     UsePassthrough = atoi(value);
   else if (!strcasecmp(name, "StereoDownmix"))
@@ -152,6 +175,10 @@ bool cMpvPluginConfig::SetupParse(const char *name, const char *value)
     PlaylistIfNoChapters = atoi(value);
   else if (!strcasecmp(name, "ShowMediaTitle"))
     ShowMediaTitle = atoi(value);
+  else if (!strcasecmp(name, "ShowSubtitles"))
+    ShowSubtitles = atoi(value);
+  else if (!strcasecmp(name, "ExitAtEnd"))
+    ExitAtEnd = atoi(value);
   else
     return false;
   return true;

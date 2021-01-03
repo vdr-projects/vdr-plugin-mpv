@@ -15,6 +15,7 @@ class cMpvFilebrowser:public cOsdMenu
     static string currentItem;
 
     void ShowDirectory(string Path);
+    void PlayListCreate(string Path, FILE *fdPl);
     void AddItem(string Path, string Text, bool IsDir);
     bool PlayFile(string Filename, bool Shuffle=false);
     bool PlayDisc();

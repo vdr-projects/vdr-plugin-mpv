@@ -12,7 +12,9 @@ cMpvMenuOptions::cMpvMenuOptions(cMpvPlayer *Player)
 
 cMpvMenuOptions::~cMpvMenuOptions()
 {
+#ifdef DEBUG
   dsyslog ("dekonstruktor\n");
+#endif
 }
 
 void cMpvMenuOptions::ShowOptions()

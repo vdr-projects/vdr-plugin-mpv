@@ -2,6 +2,7 @@ This is a "plugin" for the Video Disk Recorder (VDR).
 
 Copyright (c) 2012, 2013 by Johns.  All Rights Reserved.
 Copyright (c) 2013 - 2015 by Maniac.  All Rights Reserved.
+Copyright (c) 2020 by ua0lnj.  All Rights Reserved.
 
 License: AGPLv3
 
@@ -19,13 +20,13 @@ Description
 -----------
 
 vdr-mpv is a fork of the vdr-play plugin from Johns. It uses libmpv for playing
-media in VDR and also displays the VDR OSD (On Screen Display) during playback.
+media (video, audio, picture) in VDR and also displays the VDR OSD (On Screen Display) during playback.
 
 Requirements
 ------------
 
 - VDR version >= 2.2.0 (earlier versions may work, but are untested)
-- libmpv >= 0.8.0 (earlier versions may work, but are untested)
+- libmpv >= 0.30.0 (for old version use vdr-plugin-mpv 0.0.4.
 - xrandr (only needed for modeline switching)
 - libcdio (only needed for optical disc playback)
 
@@ -40,7 +41,7 @@ Command line arguments
 ----------------------
 
 -a audio
-  mpv --ao (Default: alsa:device=default)
+  mpv -audio-device (Default: alsa:device=default)
   The audio out device which is used by mpv, this is directly passed as ao to mpv.
 
 -v video
@@ -48,9 +49,9 @@ Command line arguments
   The video out device which is used by mpv, this is directly passed as vo to mpv.
 
 -h hwdec
-  mpv --hwdec-codecs (Default: vdpau)
-  The hwdec-codecs which are used by mpv, this is directly passed as hwdec-codecs
-  to mpv.
+  mpv -hwdec (Default: vdpau)
+  The hwdec which are used by mpv, this is directly passed as hwdec
+  to mpv. For latest mpv use -h gpu (also see -g parameter)
 
 -d device
   optical disc device (Default: /dev/dvd)
@@ -66,6 +67,9 @@ Command line arguments
 -b /dir
   file browser root directory
 
+-x extensions for playlists
+  files with this extensions are handled as playlists (Default: m3u,ini,pls,txt,playlist)
+
 -r
   switch modeline to refresh rate of played file
   xrandr is needed for this to work. If no xrandr is detected during compile time
@@ -78,11 +82,25 @@ Command line arguments
   normally mpv tries to autoload LUA scripts, if this parameter is set no scripts are
   loaded
 
+-w
+   windowed mode, not fullscreen
+
+-g
+-g geometry
+  normally mpv use EGL for hwdec=gpu and can not works with X11, if this parameter is set
+  mpv use GLX for hwdec=gpu and can works with X11.
+  Latest mpv set X11 GLX deprecated, you need configure mpv with --enable-gl-x11.
+  You can set X11 geometry with this parameter [W[xH]][+-x+-y][/WS] or x:y.
+  But size of OSD get from softhddevice geometry!!!
+
 Plugin setup options
 --------------------
 
 - Hide main menu entry
   Don't show the filebrowser in VDR main menu
+
+- Video Deinterlace
+  Video deinterlacing is enabled
 
 - Audio passthrough
   Passthrough digital audio (like AC3, DTS) formats without decoding them
@@ -101,22 +119,34 @@ Plugin setup options
 - Control playlist if no chapters in file
   If a file without chapters is played use the prev/next keys for playlist control
 
+- Show subtitles
+  Showing subtitles is enabled
+
 Remote control keys
 -------------------
+In the browser mode you can use
+
+Red:                    Play selected file
+Green:                  Play selected directory, playlist mode
+Yellow:                 Shuffle playlist
 
 The following remote keys are supported in normal operation (no disc menu active)
 
 Play, Up:               Continue playback if paused
 Down, Pause:            Pause playback
-Fast rewind:            Seek 10 seconds backwards (fast rew is not supported by mpv)
+Fast rewind:            Seek 5 seconds backwards (fast rew is not supported by mpv)
 Fast forward:           Speed up playback speed up to 32 times
 Red:                    Time search functionality like used in VDR recordings
 Green:                  Seek 60 seconds backwards
 Yellow:                 Seek 60 seconds forward
 Blue:                   Show menu with current playback options
-Stop, Back:             Stop playback
+Stop:                   Stop playback
+Back:                   Show the browser menu from where the last file was launched
 Ok:                     Display current playback status or close status display
-                        if currently open
+                        if currently open. In playlist mode display current and
+                        total playlist positions. Start playback new file
+1:                      Seek 15 seconds backwards
+3:                      Seek 15 seconds forward
 5:                      Open disc nav menu
 7:                      Previous playlist item
 9:                      Next playlist item

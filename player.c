@@ -30,9 +30,12 @@ using std::vector;
 #define MPV_OBSERVE_PAUSE 8
 #define MPV_OBSERVE_SPEED 9
 #define MPV_OBSERVE_MEDIA_TITLE 10
+#define MPV_OBSERVE_LIST_POS 11
+#define MPV_OBSERVE_LIST_COUNT 12
 
 volatile int cMpvPlayer::running = 0;
 cMpvPlayer *cMpvPlayer::PlayerHandle = NULL;
+std::string LocaleSave;
 
 // check mpv errors and send them to log
 static inline void check_error(int status)
@@ -51,24 +54,26 @@ void *cMpvPlayer::ObserverThread(void *handle)
   // set properties which should be observed
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_TIME_POS, "time-pos", MPV_FORMAT_DOUBLE);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_DISC_MENU, "disc-menu-active", MPV_FORMAT_FLAG);
-  mpv_observe_property(Player->hMpv, MPV_OBSERVE_FPS, "fps", MPV_FORMAT_DOUBLE);
+  mpv_observe_property(Player->hMpv, MPV_OBSERVE_FPS, "container-fps", MPV_FORMAT_DOUBLE);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_FILENAME, "filename", MPV_FORMAT_STRING);
-  mpv_observe_property(Player->hMpv, MPV_OBSERVE_LENGTH, "length", MPV_FORMAT_DOUBLE);
+  mpv_observe_property(Player->hMpv, MPV_OBSERVE_LENGTH, "duration", MPV_FORMAT_DOUBLE);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_CHAPTERS, "chapters", MPV_FORMAT_INT64);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_CHAPTER, "chapter", MPV_FORMAT_INT64);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_PAUSE, "pause", MPV_FORMAT_FLAG);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_SPEED, "speed", MPV_FORMAT_DOUBLE);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_MEDIA_TITLE, "media-title", MPV_FORMAT_STRING);
+  mpv_observe_property(Player->hMpv, MPV_OBSERVE_LIST_POS, "playlist-pos-1", MPV_FORMAT_INT64);
+  mpv_observe_property(Player->hMpv, MPV_OBSERVE_LIST_COUNT, "playlist-count", MPV_FORMAT_INT64);
 
   while (Player->PlayerIsRunning())
   {
-    mpv_event *event = mpv_wait_event(Player->hMpv, 10000);
+    mpv_event *event = mpv_wait_event(Player->hMpv, 5);
     switch (event->event_id)
     {
       case MPV_EVENT_SHUTDOWN :
         Player->running = 0;
       break;
-      
+
       case MPV_EVENT_PROPERTY_CHANGE :
         Player->HandlePropertyChange(event);
       break;
@@ -76,15 +81,15 @@ void *cMpvPlayer::ObserverThread(void *handle)
       case MPV_EVENT_PLAYBACK_RESTART :
         Player->ChangeFrameRate(Player->CurrentFps()); // switching directly after the fps event causes black screen
       break;
-      
+
       case MPV_EVENT_LOG_MESSAGE :
         msg = (struct mpv_event_log_message *)event->data;
         // without DEBUG log to error since we only request error messages from mpv in this case
-        #ifdef DEBUG
+#ifdef DEBUG
           dsyslog("[mpv]: %s\n", msg->text);
-        #else
+#else
           esyslog("[mpv]: %s\n", msg->text);
-        #endif
+#endif
       break;
 
       case MPV_EVENT_TRACKS_CHANGED :
@@ -115,7 +120,9 @@ void *cMpvPlayer::ObserverThread(void *handle)
       break;
     }
   }
+#ifdef DEBUG
   dsyslog("[mpv] Observer thread ended\n");
+#endif
   return handle;
 }
 
@@ -131,7 +138,9 @@ cMpvPlayer::cMpvPlayer(string Filename, bool Shuffle)
 
 cMpvPlayer::~cMpvPlayer()
 {
+#ifdef DEBUG
   dsyslog("[mpv]%s: end\n", __FUNCTION__);
+#endif
   Detach();
   PlayerHandle = NULL;
 }
@@ -169,6 +178,18 @@ bool cMpvPlayer::GetReplayMode(bool &Play, bool &Forward, int &Speed)
   return true;
 }
 
+bool cMpvPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame __attribute__((unused)))
+{
+	Total = TotalPlayTime() * FramesPerSecond();
+	Current = CurrentPlayTime() * FramesPerSecond();
+	return true;
+}
+
+double cMpvPlayer::FramesPerSecond()
+{
+  return CurrentFps();
+}
+
 void cMpvPlayer::PlayerStart()
 {
   PlayerPaused = 0;
@@ -181,8 +202,10 @@ void cMpvPlayer::PlayerStart()
   // we are cheating here with mpv since it checks for LC_NUMERIC=C at startup
   // this can cause unforseen issues with mpv
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  std::string LocaleSave = setlocale(LC_NUMERIC, NULL);
+  LocaleSave = setlocale(LC_NUMERIC, NULL);
+#ifdef DEBUG
   dsyslog ("get locale %s\n", LocaleSave.c_str());
+#endif
   setlocale(LC_NUMERIC, "C");
   hMpv = mpv_create();
   if (!hMpv)
@@ -192,31 +215,64 @@ void cMpvPlayer::PlayerStart()
   }
 
   int64_t osdlevel = 0;
-  
+
   check_error(mpv_set_option_string(hMpv, "vo", MpvPluginConfig->VideoOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()));
-  check_error(mpv_set_option_string(hMpv, "ao", MpvPluginConfig->AudioOut.c_str()));
-  check_error(mpv_set_option_string(hMpv, "hwdec-codecs", MpvPluginConfig->HwDec.c_str()));
+  if (MpvPluginConfig->UseGlx)
+  {
+      check_error(mpv_set_option_string(hMpv, "gpu-context", "x11"));
+  }
+  if (strcmp(MpvPluginConfig->Geometry.c_str(),""))
+  {
+    check_error(mpv_set_option_string(hMpv, "geometry", MpvPluginConfig->Geometry.c_str()));
+  }
+  if (!MpvPluginConfig->Windowed)
+  {
+    check_error(mpv_set_option_string(hMpv, "fullscreen", "yes"));
+  }
+  if (MpvPluginConfig->UseDeinterlace)
+  {
+    if (!strcmp(MpvPluginConfig->HwDec.c_str(),"vaapi"))
+    {
+        check_error(mpv_set_option_string(hMpv, "vf", "vavpp=deint=auto"));
+    }
+    if (!strcmp(MpvPluginConfig->HwDec.c_str(),"vdpau"))
+    {
+        check_error(mpv_set_option_string(hMpv, "vf", "vdpaupp=deint=yes:deint-mode=temporal-spatial"));
+    }
+    if (!strcmp(MpvPluginConfig->HwDec.c_str(),"cuda"))
+    {
+        check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
+        check_error(mpv_set_option_string(hMpv, "vd-lavc-o", "deint=adaptive"));
+    }
+  }
+  check_error(mpv_set_option_string(hMpv, "audio-device", MpvPluginConfig->AudioOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "slang", MpvPluginConfig->Languages.c_str()));
   check_error(mpv_set_option_string(hMpv, "alang", MpvPluginConfig->Languages.c_str()));
   check_error(mpv_set_option_string(hMpv, "cache", "no")); // video stutters if enabled
-  check_error(mpv_set_option_string(hMpv, "fullscreen", "yes"));
+  check_error(mpv_set_option_string(hMpv, "sub-visibility", MpvPluginConfig->ShowSubtitles ? "yes" : "no"));
   check_error(mpv_set_option_string(hMpv, "sub-forced-only", "yes"));
+  check_error(mpv_set_option_string(hMpv, "sub-auto", "all"));
   check_error(mpv_set_option_string(hMpv, "ontop", "yes"));
   check_error(mpv_set_option_string(hMpv, "cursor-autohide", "always"));
   check_error(mpv_set_option_string(hMpv, "stop-playback-on-init-failure", "no"));
-  check_error(mpv_set_option_string(hMpv, "idle", "once"));
+  check_error(mpv_set_option_string(hMpv, "idle", MpvPluginConfig->ExitAtEnd ? "once" : "yes"));
+  check_error(mpv_set_option_string(hMpv, "force-window", "yes"));
+  check_error(mpv_set_option_string(hMpv, "image-display-duration", "inf"));
   check_error(mpv_set_option(hMpv, "osd-level", MPV_FORMAT_INT64, &osdlevel));
+#ifdef DEBUG
+  check_error(mpv_set_option_string(hMpv, "log-file", "/var/log/mpv"));
+#endif
 
   if (MpvPluginConfig->UsePassthrough)
   {
-    check_error(mpv_set_option_string(hMpv, "ad", "-spdif:mp3,-spdif:aac,spdif:*"));
+    check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts"));
     if (MpvPluginConfig->UseDtsHdPassthrough)
-      check_error(mpv_set_option_string(hMpv, "ad-spdif-dtshd", "yes"));
+      check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts,dts-hd,truehd,eac3"));
   }
   else
   {
-    int64_t StartVolume = cDevice::CurrentVolume() / 2.55; 
+    int64_t StartVolume = cDevice::CurrentVolume() / 2.55;
     check_error(mpv_set_option(hMpv, "volume", MPV_FORMAT_INT64, &StartVolume));
     if (MpvPluginConfig->StereoDownmix)
     {
@@ -236,7 +292,7 @@ void cMpvPlayer::PlayerStart()
 #else
   mpv_request_log_messages(hMpv, "error");
 #endif
-  
+
   if (mpv_initialize(hMpv) < 0)
   {
     esyslog("[mpv] failed to initialize\n");
@@ -259,9 +315,6 @@ void cMpvPlayer::PlayerStart()
 
   // start thread to observe and react on mpv events
   pthread_create(&ObserverThreadHandle, NULL, ObserverThread, this);
-
-  // set back locale
-  setlocale(LC_NUMERIC, LocaleSave.c_str());
 }
 
 void cMpvPlayer::HandlePropertyChange(mpv_event *event)
@@ -276,7 +329,7 @@ void cMpvPlayer::HandlePropertyChange(mpv_event *event)
   {
     dsyslog("[mpv]: property %s \n", property->name);
   }
-  
+
   switch (event->reply_userdata)
   {
     case MPV_OBSERVE_TIME_POS :
@@ -318,7 +371,7 @@ void cMpvPlayer::HandlePropertyChange(mpv_event *event)
     case MPV_OBSERVE_CHAPTER :
       PlayerChapter = (int)*(int64_t*)property->data;
     break;
-    
+
     case MPV_OBSERVE_PAUSE :
       PlayerPaused = (int)*(int64_t*)property->data;
     break;
@@ -330,6 +383,14 @@ void cMpvPlayer::HandlePropertyChange(mpv_event *event)
     case MPV_OBSERVE_MEDIA_TITLE :
       mediaTitle = *(char**)property->data;
     break;
+
+    case MPV_OBSERVE_LIST_POS :
+      ListCurrent = (int)*(int64_t*)property->data;
+    break;
+
+    case MPV_OBSERVE_LIST_COUNT :
+      ListTotal = (int)*(int64_t*)property->data;
+    break;
   }
 }
 
@@ -337,13 +398,13 @@ void cMpvPlayer::HandleTracksChange()
 {
   mpv_node Node;
   mpv_get_property(hMpv, "track-list", MPV_FORMAT_NODE, &Node);
-  if (!Node.format == MPV_FORMAT_NODE_ARRAY)
+  if (Node.format != MPV_FORMAT_NODE_ARRAY)
     return;
 
   // loop though available tracks
   for (int i=0; i<Node.u.list->num; i++)
   {
-    int TrackId;
+    int TrackId = 0;
     string TrackType;
     string TrackLanguage = "undefined";
     string TrackTitle = "";
@@ -374,8 +435,9 @@ void cMpvPlayer::HandleTracksChange()
 
 void cMpvPlayer::OsdClose()
 {
+#ifdef DEBUG
   dsyslog("[mpv] %s\n", __FUNCTION__);
-
+#endif
   SendCommand ("overlay_remove 1");
 }
 
@@ -393,6 +455,8 @@ void cMpvPlayer::Shutdown()
   mpv_terminate_destroy(hMpv);
   hMpv = NULL;
   cOsdProvider::Shutdown();
+  // set back locale
+  setlocale(LC_NUMERIC, LocaleSave.c_str());
   if (MpvPluginConfig->RefreshRate)
   {
     ChangeFrameRate(OriginalFps);
@@ -402,7 +466,9 @@ void cMpvPlayer::Shutdown()
 
 void cMpvPlayer::SwitchOsdToMpv()
 {
+#ifdef DEBUG
   dsyslog("[mpv] %s\n", __FUNCTION__);
+#endif
   cOsdProvider::Shutdown();
   new cMpvOsdProvider(this);
 }
@@ -420,7 +486,7 @@ bool cMpvPlayer::IsPlaylist(string File)
 
 void cMpvPlayer::ChangeFrameRate(int TargetRate)
 {
-  #ifdef USE_XRANDR
+#ifdef USE_XRANDR
   if (!MpvPluginConfig->RefreshRate)
     return;
 
@@ -469,6 +535,37 @@ void cMpvPlayer::ChangeFrameRate(int TargetRate)
 #endif
 }
 
+void cMpvPlayer::ScaleVideo(int x, int y, int width, int height)
+{
+  char buffer[20];
+  int osdWidth, osdHeight;
+  double Aspect;
+  cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, Aspect);
+
+  if(!x && !y && !width && !height)
+  {
+    mpv_set_property_string(hMpv, "video-pan-x", "0.0");
+    mpv_set_property_string(hMpv, "video-pan-y", "0.0");
+    mpv_set_property_string(hMpv, "video-scale-x", "1.0");
+    mpv_set_property_string(hMpv, "video-scale-y", "1.0");
+  }
+  else
+  {
+    int err = snprintf (buffer, sizeof(buffer), "%d:%d", width, osdWidth);
+    if (err > 0)
+      mpv_set_property_string(hMpv, "video-scale-x", buffer);
+    err = snprintf (buffer, sizeof(buffer), "%d:%d", height, osdHeight);
+    if (err > 0)
+      mpv_set_property_string(hMpv, "video-scale-y", buffer);
+    err = snprintf (buffer, sizeof(buffer), "%d:%d", x - (osdWidth - width) / 2, width);
+    if (err > 0)
+      mpv_set_property_string(hMpv, "video-pan-x", buffer);
+    err = snprintf (buffer, sizeof(buffer), "%d:%d", y - (osdHeight - height) / 2,height);
+    if (err > 0)
+      mpv_set_property_string(hMpv, "video-pan-y", buffer);
+  }
+}
+
 void cMpvPlayer::SendCommand(const char *cmd, ...)
 {
   if (!PlayerIsRunning())
@@ -479,6 +576,12 @@ void cMpvPlayer::SendCommand(const char *cmd, ...)
   vsnprintf(buf, sizeof(buf), cmd, va);
   va_end(va);
   mpv_command_string(hMpv, buf);
+}
+
+void cMpvPlayer::PlayNew(string Filename)
+{
+  const char *cmd[] = {"loadfile", Filename.c_str(), NULL};
+  mpv_command(hMpv, cmd);
 }
 
 void cMpvPlayer::Seek(int Seconds)
@@ -568,16 +671,15 @@ void cMpvPlayer::NextChapter()
 
 void cMpvPlayer::NextPlaylistItem()
 {
-  SendCommand("pt_step 1\n");
+  SendCommand("playlist-next\n");
 }
 
 void cMpvPlayer::PreviousPlaylistItem()
 {
-  SendCommand("pt_step -1\n");
+  SendCommand("playlist-prev\n");
 }
 
 void cMpvPlayer::SetVolume(int Volume)
 {
   SendCommand("set volume %d\n", Volume);
 }
-

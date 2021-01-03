@@ -19,11 +19,11 @@
 #include "menu_options.h"
 #include "mpv_service.h"
 
-static const char *VERSION = "0.0.4"
-  #ifdef GIT_REV
+static const char *VERSION = "0.2.1"
+#ifdef GIT_REV
     "-GIT" GIT_REV
-  #endif
-  ;
+#endif
+;
 
 using std::string;
 
@@ -32,7 +32,7 @@ static const char *DESCRIPTION = trNOOP("mpv player plugin");
 class cMpvPlugin:public cPlugin
 {
   private:
-    void PlayFile(string Filename, bool Shuffle=false) { cControl::Launch(new cMpvControl(Filename.c_str(), Shuffle)); }
+    void PlayFile(string Filename, bool Shuffle=false);
     bool IsIsoImage(string Filename);
     void PlayFileHandleType(string Filename, bool Shuffle=false);
 
@@ -54,6 +54,18 @@ class cMpvPlugin:public cPlugin
     virtual cString SVDRPCommand(const char *Command, const char *Option, int &ReplayCode);
 };
 
+void cMpvPlugin::PlayFile(string Filename, bool Shuffle)
+{
+  if (!cMpvPlayer::PlayerIsRunning())
+    cControl::Launch(new cMpvControl(Filename.c_str(), Shuffle));
+  else
+  {
+    cMpvControl* control = dynamic_cast<cMpvControl*>(cControl::Control(true));
+    if(control)
+      control->PlayNew(Filename.c_str());
+  }
+}
+
 cMpvPlugin::cMpvPlugin(void)
 {
   MpvPluginConfig = new cMpvPluginConfig();
@@ -67,12 +79,45 @@ cMpvPlugin::~cMpvPlugin(void)
 cOsdObject *cMpvPlugin::MainMenuAction(void)
 {
   if (cMpvPlayer::PlayerIsRunning())
-    return new cMpvMenuOptions(cMpvPlayer::Player());
+  {
+    if (!MpvPluginConfig->ShowOptions)
+      return new cMpvFilebrowser(MpvPluginConfig->BrowserRoot, MpvPluginConfig->DiscDevice);
+    else
+      return new cMpvMenuOptions(cMpvPlayer::Player());
+  }
   return new cMpvFilebrowser(MpvPluginConfig->BrowserRoot, MpvPluginConfig->DiscDevice);
 }
 
 bool cMpvPlugin::Service(const char *id, void *data)
 {
+  if (strcmp(id, "Mpv_Seek") == 0)
+  {
+    Mpv_Seek *seekInfo = (Mpv_Seek *)data;
+
+    cMpvControl* control = dynamic_cast<cMpvControl*>(cControl::Control(true));
+    if(control)
+    {
+      if(seekInfo->SeekRelative != 0)
+      {
+          control->SeekRelative(seekInfo->SeekRelative);
+      }
+      else if(seekInfo->SeekAbsolute >= 0)
+      {
+        control->SeekTo(seekInfo->SeekAbsolute);
+      }
+    }
+    return true;
+  }
+  if (strcmp(id, "ScaleVideo") == 0)
+  {
+    Mpv_ScaleVideo *scaleVideo = (Mpv_ScaleVideo *)data;
+    cMpvControl* control = dynamic_cast<cMpvControl*>(cControl::Control(true));
+    if(control)
+    {
+        control->ScaleVideo(scaleVideo->x, scaleVideo->y, scaleVideo->width, scaleVideo->height);
+    }
+    return true;
+  }
   if (strcmp(id, "Mpv_PlayFile") == 0)
   {
     Mpv_PlayFile *playFile = (Mpv_PlayFile *)data;
@@ -108,7 +153,9 @@ bool cMpvPlugin::Service(const char *id, void *data)
 
 cString cMpvPlugin::SVDRPCommand(const char *Command, const char *Option, int &ReplayCode)
 {
+#ifdef DEBUG
   dsyslog ("Command %s Option %s\n", Command, Option);
+#endif
   if (strcasecmp(Command, "PLAY") == 0)
   {
     PlayFileHandleType(Option);

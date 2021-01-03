@@ -30,6 +30,7 @@ class cMpvPluginConfig
     bool SetupParse(const char *name, const char *value);  // parse setup.conf values
 
     // plugin setup variables
+    int UseDeinterlace;             // enable deinterlace
     int UsePassthrough;             // enable passthrough
     int UseDtsHdPassthrough;        // enable DTS-HD passthrough
     int StereoDownmix;              // enable stereo downmix
@@ -37,12 +38,15 @@ class cMpvPluginConfig
     int PlaylistOnNextKey;          // skip to next playlist item on next/previous keys
     int PlaylistIfNoChapters;       // skip to next playlist item if the file has no chapters
     int ShowMediaTitle;             // show title from media file instead of filename
+    int ShowSubtitles;              // show subtitles
+    int ExitAtEnd;                  // exit at the end
 
     // plugin parameter variables
     string BrowserRoot;             // start dir for filebrowser
     int RefreshRate;                // enable modeline switching
     string VideoOut;                // video out device
     string HwDec;                   // hwdec codecs
+    int UseGlx;                     // enable use GLX with X11, because mpv use EGL by default.
     string AudioOut;                // audio out device
     string DiscDevice;              // optical disc device
     string Languages;               // language string for audio and subtitle TODO move to Setup menu
@@ -52,6 +56,10 @@ class cMpvPluginConfig
 
     string X11Display;              // X11 display used for mpv
     string TitleOverride;           // title to display (ovveride used via service interface)
+    string Geometry;                // X11 display geometry
+    int Windowed;                   // windowed mode, not fullscreen
+
+    int ShowOptions;                // switch show menu options or filebrowser menu
 };
 
 // only create one instance (done in mpv.c), all other calls will simply get the extern reference

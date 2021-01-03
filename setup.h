@@ -18,12 +18,15 @@ class cMpvPluginSetup:public cMenuSetupPage
     virtual void Store();
 
     int SetupHideMainMenuEntry;
+    int SetupUseDeinterlace;
     int SetupUsePassthrough;
     int SetupUseDtsHdPassthrough;
     int SetupStereoDownmix;
     int SetupPlaylistOnNextKey;
     int SetupPlaylistIfNoChapters;
     int SetupShowMediaTitle;
+    int SetupShowSubtitles;
+    int SetupExitAtEnd;
 
   public:
     cMpvPluginSetup();

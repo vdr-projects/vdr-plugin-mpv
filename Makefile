@@ -18,8 +18,9 @@ LIBMPV ?= $(shell pkg-config --exists mpv && echo 1)
 LIBCDIO ?= $(shell pkg-config --exists libcdio && echo 1)
 LIBMOUNT ?= $(shell pkg-config --exists mount && echo 1)
 
-ifneq ($(LIBMPV),1)
-$(error libmpv missing)
+ifeq ($(LIBMPV),1)
+CONFIG += -DUSE_LIBMPV
+LIBS += $(shell pkg-config --libs mpv)
 endif
 
 ifeq ($(LIBCDIO),1)
@@ -34,8 +35,6 @@ ifeq ($(XRANDR),1)
 CONFIG += -DUSE_XRANDR
 LIBS += $(shell pkg-config --libs xrandr)
 endif
-
-LIBS += $(shell pkg-config --libs mpv)
 
 ### The version number of this plugin (taken from the main source file):
 
@@ -93,7 +92,8 @@ all: $(SOFILE) i18n
 ### Implicit rules:
 
 %.o: %.c
-	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) -o $@ $<
+	@echo CC $@
+	$(Q)$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) -o $@ $<
 
 ### Dependencies:
 
@@ -113,13 +113,16 @@ I18Nmsgs  = $(addprefix $(DESTDIR)$(LOCDIR)/, $(addsuffix /LC_MESSAGES/vdr-$(PLU
 I18Npot   = $(PODIR)/$(PLUGIN).pot
 
 %.mo: %.po
-	msgfmt -c -o $@ $<
+	@echo MO $@
+	$(Q)msgfmt -c -o $@ $<
 
 $(I18Npot): $(wildcard *.c)
-	xgettext -C -cTRANSLATORS --no-wrap --no-location -k -ktr -ktrNOOP --package-name=vdr-$(PLUGIN) --package-version=$(VERSION) --msgid-bugs-address='<see README>' -o $@ `ls $^`
+	@echo GT $@
+	$(Q)xgettext -C -cTRANSLATORS --no-wrap --no-location -k -ktr -ktrNOOP --package-name=vdr-$(PLUGIN) --package-version=$(VERSION) --msgid-bugs-address='<see README>' -o $@ `ls $^`
 
 %.po: $(I18Npot)
-	msgmerge -U --no-wrap --no-location --backup=none -q -N $@ $<
+	@echo PO $@
+	$(Q)msgmerge -U --no-wrap --no-location --backup=none -q -N $@ $<
 	@touch $@
 
 $(I18Nmsgs): $(DESTDIR)$(LOCDIR)/%/LC_MESSAGES/vdr-$(PLUGIN).mo: $(PODIR)/%.mo
@@ -133,7 +136,8 @@ install-i18n: $(I18Nmsgs)
 ### Targets:
 
 $(SOFILE): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -shared $(OBJS) $(LIBS) -o $@
+	@echo LD $@
+	$(Q)$(CXX) $(CXXFLAGS) $(LDFLAGS) -shared $(OBJS) $(LIBS) -o $@
 
 install-lib: $(SOFILE)
 	install -D $^ $(DESTDIR)$(LIBDIR)/$^.$(APIVERSION)

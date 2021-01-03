@@ -43,5 +43,17 @@ typedef struct
   char *Title;
 } Mpv_SetTitle;
 
-#endif
+typedef struct
+{
+  int SeekAbsolute;
+  int SeekRelative;
+} Mpv_Seek;
 
+typedef struct
+{
+  int x;
+  int y;
+  int width;
+  int height;
+} Mpv_ScaleVideo;
+#endif

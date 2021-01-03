@@ -10,6 +10,7 @@
 
 #include "filebrowser.h"
 #include "mpv_service.h"
+#include "config.h"
 
 using std::string;
 using std::vector;
@@ -19,7 +20,7 @@ string cMpvFilebrowser::currentDir = "";
 string cMpvFilebrowser::currentItem = "";
 
 cMpvFilebrowser::cMpvFilebrowser(string RootDir, string DiscDevice)
-:cOsdMenu("Filebrowser")
+:cOsdMenu(tr("Filebrowser"))
 {
   rootDir = RootDir;
   discDevice = DiscDevice;
@@ -38,6 +39,16 @@ void cMpvFilebrowser::ShowDirectory(string Path)
   struct dirent *Entry;
 
   hDir = opendir(Path.c_str());
+  // do not crash if browser root directory absent
+  if (!hDir)
+  {
+    esyslog("[mpv] No browser root directory!\n");
+    rootDir = "/";
+    currentDir = rootDir;
+    MpvPluginConfig->BrowserRoot = rootDir;
+    Path = rootDir;
+    hDir = opendir(Path.c_str());
+  }
   while ((Entry = readdir(hDir)) != NULL)
   {
     if (!Entry || Entry->d_name[0] == '.')
@@ -64,16 +75,69 @@ void cMpvFilebrowser::ShowDirectory(string Path)
   for (unsigned int i=0; i<Files.size(); i++)
     AddItem(Path, Files[i], false);
 
-  string MenuTitle = "Filebrowser";
+  string MenuTitle = tr("Filebrowser");
   if (rootDir != Path)
     MenuTitle += " (" + Path.substr(rootDir.size() + 1, string::npos) + ")";
   SetTitle(MenuTitle.c_str());
 #ifdef USE_DISC
-  SetHelp("Disc", NULL, "Shuffle", NULL);
+  SetHelp(tr("Disc"), Directories.size() ? tr("PlayDir") : NULL, tr("Shuffle"), NULL);
 #else
-  SetHelp(NULL, NULL, "Shuffle", NULL);
+  SetHelp(NULL, Directories.size() ? tr("PlayDir") : NULL, tr("Shuffle"), NULL);
 #endif
   Display();
+}
+
+void cMpvFilebrowser::PlayListCreate(string Path, FILE *fdPl)
+{
+  Clear();
+  vector<string> PlayDirectories;
+  vector<string> PlayFiles;
+
+  DIR *playDir;
+  struct dirent *Entry;
+
+  playDir = opendir(Path.c_str());
+  // do not crash if browser play directory absent
+  if (!playDir)
+  {
+    esyslog("[mpv] No play directory!\n");
+    return;
+  }
+  while ((Entry = readdir(playDir)) != NULL)
+  {
+    if (!Entry || Entry->d_name[0] == '.')
+      continue;
+
+    //excluding resume files
+    string ex = Entry->d_name;
+    if (!ex.find("resume")) continue;
+
+    struct stat Stat;
+    string Filename = Path + "/" + Entry->d_name;
+    stat(Filename.c_str(), &Stat);
+
+    if (S_ISDIR(Stat.st_mode))
+      PlayDirectories.push_back(Entry->d_name);
+
+    else if (S_ISREG(Stat.st_mode))
+      PlayFiles.push_back(Entry->d_name);
+  }
+  closedir(playDir);
+
+  sort(PlayDirectories.begin(), PlayDirectories.end());
+  sort(PlayFiles.begin(), PlayFiles.end());
+
+  for (unsigned int i=0; i<PlayDirectories.size(); i++)
+  {
+    string Filedir = Path + "/" + PlayDirectories[i];
+    PlayListCreate(Filedir, fdPl);
+  }
+
+  for (unsigned int i=0; i<PlayFiles.size(); i++)
+  {
+    string Filename = Path + "/" + PlayFiles[i];
+    fprintf(fdPl, "%s\n", Filename.c_str());
+  }
 }
 
 void cMpvFilebrowser::AddItem(string Path, string Text, bool IsDir)
@@ -93,6 +157,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
   {
     case kOk:
       item = (cMpvFilebrowserMenuItem *) Get(Current());
+      if (!item) break;
       newPath = item->Path() + "/" + item->Text();
       if (item->IsDirectory())
       {
@@ -126,6 +191,11 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
       State = cOsdMenu::ProcessKey(Key);
       item = (cMpvFilebrowserMenuItem *) Get(Current());
       currentItem = item->Text();
+#ifdef USE_DISC
+      SetHelp(tr("Disc"), item->IsDirectory() ? tr("PlayDir") : NULL, tr("Shuffle"), NULL);
+#else
+      SetHelp(NULL, item->IsDirectory() ? tr("PlayDir") : NULL, tr("Shuffle"), NULL);
+#endif
     return State;
 
     case kRed:
@@ -143,6 +213,24 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
         return osEnd;
       }
       return osContinue;
+
+    case kGreen:
+      item = (cMpvFilebrowserMenuItem *) Get(Current());
+      newPath = item->Path() + "/" + item->Text();
+      if (item->IsDirectory())
+      {
+        FILE *fdPl = fopen ("/tmp/mpv.playlist", "w");
+        if (!fdPl)
+        {
+          esyslog ("[mpv] Playlist creation error!\n");
+          return osEnd;
+        }
+        PlayListCreate(newPath, fdPl);
+        fclose (fdPl);
+        PlayFile("/tmp/mpv.playlist");
+        return osEnd;
+      }
+    break;
 
     default:
     break;
