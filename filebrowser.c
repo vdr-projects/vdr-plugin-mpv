@@ -205,6 +205,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
 
     case kYellow:
       item = (cMpvFilebrowserMenuItem *) Get(Current());
+      if (!item) break;
       newPath = item->Path() + "/" + item->Text();
       if (!item->IsDirectory())
       {
@@ -216,6 +217,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
 
     case kGreen:
       item = (cMpvFilebrowserMenuItem *) Get(Current());
+      if (!item) break;
       newPath = item->Path() + "/" + item->Text();
       if (item->IsDirectory())
       {
