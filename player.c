@@ -17,7 +17,8 @@
 #ifdef USE_XRANDR
 #include <X11/extensions/Xrandr.h>
 #endif
-
+#include <X11/Xlib-xcb.h>
+#include <xcb/xfixes.h>
 using std::vector;
 
 #define MPV_OBSERVE_TIME_POS 1
@@ -96,12 +97,15 @@ void *cMpvPlayer::ObserverThread(void *handle)
         Player->HandleTracksChange();
       break;
 
+      case MPV_EVENT_VIDEO_RECONFIG :
+          Player->PlayerHideCursor();
+      break;
+
       case MPV_EVENT_NONE :
       case MPV_EVENT_END_FILE :
       case MPV_EVENT_PAUSE :
       case MPV_EVENT_UNPAUSE :
       case MPV_EVENT_FILE_LOADED :
-      case MPV_EVENT_VIDEO_RECONFIG :
       case MPV_EVENT_GET_PROPERTY_REPLY :
       case MPV_EVENT_SET_PROPERTY_REPLY :
       case MPV_EVENT_COMMAND_REPLY :
@@ -188,6 +192,58 @@ bool cMpvPlayer::GetIndex(int& Current, int& Total, bool SnapToIFrame __attribut
 double cMpvPlayer::FramesPerSecond()
 {
   return CurrentFps();
+}
+
+void cMpvPlayer::PlayerHideCursor()
+{
+  Display *Dpy;
+  xcb_connection_t *Connect;
+  int screen_nr;
+  int i;
+  int len;
+  xcb_screen_iterator_t screen_iter;
+  xcb_screen_t const *screen;
+  xcb_query_tree_cookie_t  cookie;
+  xcb_query_tree_reply_t *reply;
+  xcb_window_t *child;
+
+  Dpy = XOpenDisplay(MpvPluginConfig->X11Display.c_str());
+  if (!Dpy) return;
+
+  Connect = XGetXCBConnection(Dpy);
+  if (!Connect) return;
+
+  screen_nr = DefaultScreen(Dpy);
+
+  screen_iter = xcb_setup_roots_iterator(xcb_get_setup(Connect));
+  for (i = 0; i < screen_nr; ++i)
+  {
+    xcb_screen_next(&screen_iter);
+  }
+  screen = screen_iter.data;
+
+  cookie = xcb_query_tree(Connect,screen->root);
+  reply = xcb_query_tree_reply(Connect, cookie, 0);
+  len = xcb_query_tree_children_length(reply);
+
+  if (len)
+  {
+    uint32_t values[4];
+    xcb_pixmap_t pixmap;
+    xcb_cursor_t cursor;
+
+    child = xcb_query_tree_children(reply);
+    pixmap = xcb_generate_id(Connect);
+    xcb_create_pixmap(Connect, 1, pixmap, child[0], 1, 1);
+    cursor = xcb_generate_id(Connect);
+    xcb_create_cursor(Connect, cursor, pixmap, pixmap, 0, 0, 0, 0, 0, 0, 1, 1);
+
+    values[0] = cursor;
+    xcb_change_window_attributes(Connect, child[0], XCB_CW_CURSOR, values);
+  }
+  xcb_flush(Connect);
+  free(reply);
+  XCloseDisplay(Dpy);
 }
 
 void cMpvPlayer::PlayerStart()
