@@ -18,7 +18,7 @@
 #include <X11/extensions/Xrandr.h>
 #endif
 #include <X11/Xlib-xcb.h>
-#include <xcb/xfixes.h>
+
 using std::vector;
 
 #define MPV_OBSERVE_TIME_POS 1

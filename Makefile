@@ -36,6 +36,7 @@ CONFIG += -DUSE_XRANDR
 LIBS += $(shell pkg-config --libs xrandr)
 endif
 
+LIBS += $(shell pkg-config --libs x11-xcb)
 ### The version number of this plugin (taken from the main source file):
 
 VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).c | awk '{ print $$6 }' | sed -e 's/[";]//g')
