@@ -390,7 +390,11 @@ void cMpvControl::TimeSearchProcess(eKeys Key)
     case kRight: {
          int dir = ((Key == kRight || Key == kFastFwd) ? 1 : -1);
          if (dir > 0)
+#if VDRVERSNUM < 20305
             Seconds = min(Total - Current - STAY_SECONDS_OFF_END, Seconds);
+#else
+            Seconds = std::min(Total - Current - STAY_SECONDS_OFF_END, Seconds);
+#endif
          else
             Seconds = 0-Seconds;
          Player->Seek(Seconds);
@@ -404,7 +408,11 @@ void cMpvControl::TimeSearchProcess(eKeys Key)
     case kDown:
     case kOk:
          if (timeSearchPos > 0) {
+#if VDRVERSNUM < 20305
             Seconds = min(Total - STAY_SECONDS_OFF_END, Seconds);
+#else
+            Seconds = std::min(Total - STAY_SECONDS_OFF_END, Seconds);
+#endif
             Player->SetTimePos(Seconds);
             }
          timeSearchActive = false;
