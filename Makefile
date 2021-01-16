@@ -10,7 +10,7 @@
 PLUGIN = mpv
 
 ### Configuration (edit this for your needs)
-#CONFIG := -DDEBUG			# uncomment to build DEBUG
+CONFIG := -DDEBUG			# uncomment to build DEBUG
 
 # support refresh rate switching
 XRANDR ?= $(shell pkg-config --exists xrandr && echo 1)
@@ -36,6 +36,7 @@ CONFIG += -DUSE_XRANDR
 LIBS += $(shell pkg-config --libs xrandr)
 endif
 
+LIBS += $(shell pkg-config --libs x11-xcb)
 ### The version number of this plugin (taken from the main source file):
 
 VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).c | awk '{ print $$6 }' | sed -e 's/[";]//g')
@@ -48,6 +49,7 @@ PKGCFG = $(if $(VDRDIR),$(shell pkg-config --variable=$(1) $(VDRDIR)/vdr.pc),$(s
 LIBDIR = $(call PKGCFG,libdir)
 LOCDIR = $(call PKGCFG,locdir)
 PLGCFG = $(call PKGCFG,plgcfg)
+PLGRESDIR = $(call PKGCFG,resdir)/plugins/$(PLUGIN)
 #
 TMPDIR ?= /tmp
 
@@ -81,6 +83,7 @@ INCLUDES +=
 DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -D_GNU_SOURCE $(CONFIG) \
 	$(if $(GIT_REV), -DGIT_REV='"$(GIT_REV)"')
 
+DEFINES += -DPLGRESDIR='"$(PLGRESDIR)"'
 ### The object files (add further files here):
 
 OBJS = $(PLUGIN).o config.o control.o filebrowser.o menu_options.o osd.o player.o setup.o status.o

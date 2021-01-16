@@ -22,6 +22,7 @@ class cMpvPlayer:public cPlayer
   private:
     void PlayerStart();
     void SwitchOsdToMpv();
+    void PlayerHideCursor();
 
     string PlayFilename;              // file to play
     bool PlayShuffle;                 // shuffle playlist
@@ -77,6 +78,8 @@ class cMpvPlayer:public cPlayer
     void SetChapter(int Chapter);
     void TogglePause();
     void QuitPlayer();
+    void StopPlayer();
+    void SavePosPlayer();
     void DiscNavUp();
     void DiscNavDown();
     void DiscNavLeft();

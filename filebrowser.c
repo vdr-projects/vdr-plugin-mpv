@@ -87,7 +87,7 @@ void cMpvFilebrowser::ShowDirectory(string Path)
   Display();
 }
 
-void cMpvFilebrowser::PlayListCreate(string Path, FILE *fdPl)
+int cMpvFilebrowser::PlayListCreate(string Path, FILE *fdPl)
 {
   Clear();
   vector<string> PlayDirectories;
@@ -101,7 +101,7 @@ void cMpvFilebrowser::PlayListCreate(string Path, FILE *fdPl)
   if (!playDir)
   {
     esyslog("[mpv] No play directory!\n");
-    return;
+    return -1;
   }
   while ((Entry = readdir(playDir)) != NULL)
   {
@@ -110,7 +110,7 @@ void cMpvFilebrowser::PlayListCreate(string Path, FILE *fdPl)
 
     //excluding resume files
     string ex = Entry->d_name;
-    if (!ex.find("resume")) continue;
+    if (ex.find("resume") != string::npos) continue;
 
     struct stat Stat;
     string Filename = Path + "/" + Entry->d_name;
@@ -123,6 +123,8 @@ void cMpvFilebrowser::PlayListCreate(string Path, FILE *fdPl)
       PlayFiles.push_back(Entry->d_name);
   }
   closedir(playDir);
+
+  if (!PlayDirectories.size() && !PlayFiles.size()) return -1;
 
   sort(PlayDirectories.begin(), PlayDirectories.end());
   sort(PlayFiles.begin(), PlayFiles.end());
@@ -138,6 +140,7 @@ void cMpvFilebrowser::PlayListCreate(string Path, FILE *fdPl)
     string Filename = Path + "/" + PlayFiles[i];
     fprintf(fdPl, "%s\n", Filename.c_str());
   }
+  return 0;
 }
 
 void cMpvFilebrowser::AddItem(string Path, string Text, bool IsDir)
@@ -205,6 +208,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
 
     case kYellow:
       item = (cMpvFilebrowserMenuItem *) Get(Current());
+      if (!item) break;
       newPath = item->Path() + "/" + item->Text();
       if (!item->IsDirectory())
       {
@@ -216,19 +220,31 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
 
     case kGreen:
       item = (cMpvFilebrowserMenuItem *) Get(Current());
+      if (!item) break;
       newPath = item->Path() + "/" + item->Text();
       if (item->IsDirectory())
       {
+        int res;
         FILE *fdPl = fopen ("/tmp/mpv.playlist", "w");
         if (!fdPl)
         {
+          Skins.Message(mtError, tr("Playlist cannot be created!"));
           esyslog ("[mpv] Playlist creation error!\n");
           return osEnd;
         }
-        PlayListCreate(newPath, fdPl);
+        res = PlayListCreate(newPath, fdPl);
         fclose (fdPl);
-        PlayFile("/tmp/mpv.playlist");
-        return osEnd;
+        if (!res)
+        {
+          PlayFile("/tmp/mpv.playlist");
+          return osEnd;
+        }
+        else
+        {
+          ShowDirectory(currentDir);
+          Skins.Message(mtError, tr("Playlist cannot be created!"));
+          return osContinue;
+        }
       }
     break;
 
