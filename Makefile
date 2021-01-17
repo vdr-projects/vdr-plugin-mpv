@@ -10,7 +10,7 @@
 PLUGIN = mpv
 
 ### Configuration (edit this for your needs)
-CONFIG := -DDEBUG			# uncomment to build DEBUG
+#CONFIG := -DDEBUG			# uncomment to build DEBUG
 
 # support refresh rate switching
 XRANDR ?= $(shell pkg-config --exists xrandr && echo 1)
