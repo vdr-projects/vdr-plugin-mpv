@@ -271,8 +271,7 @@ void cMpvPlayer::PlayerStart()
   }
 
   int64_t osdlevel = 0;
-  string watch_later = PLGRESDIR;
-  watch_later += "/watch_later";
+  string config_dir = PLGRESDIR;
 
   check_error(mpv_set_option_string(hMpv, "vo", MpvPluginConfig->VideoOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()));
@@ -311,8 +310,9 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "sub-visibility", MpvPluginConfig->ShowSubtitles ? "yes" : "no"));
   check_error(mpv_set_option_string(hMpv, "sub-forced-only", "yes"));
   check_error(mpv_set_option_string(hMpv, "sub-auto", "all"));
-  check_error(mpv_set_option_string(hMpv, "watch-later-directory", watch_later.c_str()));
   check_error(mpv_set_option_string(hMpv, "write-filename-in-watch-later-config", "yes"));
+  check_error(mpv_set_option_string(hMpv, "config-dir", config_dir.c_str()));
+  check_error(mpv_set_option_string(hMpv, "config", "yes"));
   check_error(mpv_set_option_string(hMpv, "ontop", "yes"));
   check_error(mpv_set_option_string(hMpv, "cursor-autohide", "always"));
   check_error(mpv_set_option_string(hMpv, "stop-playback-on-init-failure", "no"));
@@ -641,6 +641,8 @@ void cMpvPlayer::SendCommand(const char *cmd, ...)
 void cMpvPlayer::PlayNew(string Filename)
 {
   const char *cmd[] = {"loadfile", Filename.c_str(), NULL};
+  if (MpvPluginConfig->SavePos)
+    SavePosPlayer();
   mpv_command(hMpv, cmd);
 }
 
