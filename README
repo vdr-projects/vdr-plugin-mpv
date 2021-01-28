@@ -21,6 +21,8 @@ Description
 
 vdr-mpv is a fork of the vdr-play plugin from Johns. It uses libmpv for playing
 media (video, audio, picture) in VDR and also displays the VDR OSD (On Screen Display) during playback.
+You can play internet or network streams also. For this you need make mpv with lua script
+and youtube-dl (for youtube stream).
 
 Requirements
 ------------
@@ -174,6 +176,14 @@ above and gain the following function
 Up, Down, Left, Right:  Navigate through the disc menu
 Ok:                     Select the currently highlighted entry in the disc menu
 Back:                   Back in the disc nav menu
+
+Playback options menu have:
+ Chapters menu, when playing a file with chapters:
+ You can select and go to the selected chapter
+
+ Playlist menu, when playing a playlist:
+ You can select and go to the selected file or stream
+
 
 SVDRP commands
 --------------
