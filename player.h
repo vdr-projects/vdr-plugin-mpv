@@ -37,6 +37,7 @@ class cMpvPlayer:public cPlayer
 
     // Player status variables
     int PlayerPaused;                 // player paused
+    int PlayerRecord;                 // player record
     int PlayerDiscNav;                // discnav active
     int PlayerNumChapters;            // number of chapters
     int PlayerChapter;                // current chapter
@@ -52,8 +53,9 @@ class cMpvPlayer:public cPlayer
     static volatile int running;
     int ListCurrent;                  // position in playlist
     int ListTotal;                    // number of positions in playlist
-    vector<string> ListFilenames;      // filenames in playlist
-    vector<string> ListTitles   ;      // titles in playlist
+    vector<string> ListFilenames;     // filenames in playlist
+    vector<string> ListTitles   ;     // titles in playlist
+    int isNetwork;                    // detect network stream
 
   public:
     cMpvPlayer(string Filename, bool Shuffle=false);
@@ -72,6 +74,7 @@ class cMpvPlayer:public cPlayer
     // functions to send commands to mpv
     void SendCommand(const char *cmd, ...);
     void PlayNew(string Filename);
+    void Record(string Filename);
     void Seek(int Seconds); // seek n seconds
     void SetTimePos(int Seconds);
     void SetSpeed(int Speed);
@@ -99,6 +102,7 @@ class cMpvPlayer:public cPlayer
 
     // functions to get different status information about the current playback
     int IsPaused() { return PlayerPaused; }
+    int IsRecord() { return PlayerRecord; }
     int DiscNavActive() { return PlayerDiscNav; }
     int NumChapters() { return PlayerNumChapters; }
     int CurrentChapter() { return PlayerChapter + 1; } // return the current value +1 since mpv begins at 0
@@ -114,6 +118,7 @@ class cMpvPlayer:public cPlayer
     string MediaTitle() { return mediaTitle; }
     string ListTitle(unsigned int pos) {if (pos <= ListTitles.size() && pos) return ListTitles[pos-1]; else return ""; }
     string ListFilename(unsigned int pos) {if (pos <= ListFilenames.size() && pos) return ListFilenames[pos-1]; else return ""; }
+    int NetworkPlay() { return isNetwork; }
 };
 
 #endif
