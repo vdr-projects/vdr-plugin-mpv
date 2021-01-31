@@ -112,6 +112,11 @@ eOSState cMpvMenuPlaylist::ProcessKey(eKeys Key)
     switch (Key)
     {
       case kOk:
+        if (player->IsRecord())
+        {
+          Skins.Message(mtError, tr("Recording - can't play!"));
+          break;
+        }
         cMpvMenuPlaylistItem *item = (cMpvMenuPlaylistItem *) Get(Current());
         player->PlayIndex(item->Number());
       return osEnd;
