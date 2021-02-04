@@ -548,7 +548,11 @@ void cMpvPlayer::Shutdown()
   if (ObserverThreadHandle)
     pthread_cancel(ObserverThreadHandle);
 
+#if MPV_CLIENT_API_VERSION >= MPV_MAKE_VERSION(1,29)
   mpv_destroy(hMpv);
+#else
+  mpv_detach_destroy(hMpv);
+#endif
   hMpv = NULL;
   cOsdProvider::Shutdown();
   // set back locale
