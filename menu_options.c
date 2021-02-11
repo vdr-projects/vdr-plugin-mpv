@@ -88,8 +88,8 @@ void cMpvMenuChapters::AddItem(string Title, int Number)
 
 cMpvMenuChapterItem::cMpvMenuChapterItem(string Title, int Number)
 {
-  // TODO add number in front
   number = Number;
+  Title = std::to_string(number) + "  " + Title;
   SetText(Title.c_str());
 }
 
@@ -136,7 +136,7 @@ void cMpvMenuPlaylist::AddItem(string Title, int Number)
 
 cMpvMenuPlaylistItem::cMpvMenuPlaylistItem(string Title, int Number)
 {
-  // TODO add number in front
   number = Number;
+  Title = std::to_string(number) + "  " + Title;
   SetText(Title.c_str());
 }
