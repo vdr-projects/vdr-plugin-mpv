@@ -99,7 +99,7 @@ msgid "Enable stereo downmix"
 msgstr "Смешать в стерео"
 
 msgid "Software volume control"
-msgstr "Прогр. регул. громкости "
+msgstr "Прогр. регул. громкости"
 
 msgid "Use prev/next keys for playlist control"
 msgstr "Пред./след. для управления плейлистом"

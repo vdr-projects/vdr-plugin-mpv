@@ -562,6 +562,8 @@ void cMpvPlayer::Shutdown()
     ChangeFrameRate(OriginalFps);
     OriginalFps = -1;
   }
+  Setup.CurrentVolume  = cDevice::CurrentVolume();
+  Setup.Save();
 }
 
 void cMpvPlayer::SwitchOsdToMpv()
