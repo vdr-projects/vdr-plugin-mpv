@@ -337,7 +337,10 @@ void cMpvPlayer::PlayerStart()
   else
   {
     int64_t StartVolume = cDevice::CurrentVolume() / 2.55;
-    check_error(mpv_set_option(hMpv, "volume", MPV_FORMAT_INT64, &StartVolume));
+    if (MpvPluginConfig->SoftVol)
+      check_error(mpv_set_option(hMpv, "volume", MPV_FORMAT_INT64, &StartVolume));
+    else
+      mpv_set_property_string(hMpv, "ao-volume", std::to_string(StartVolume).c_str());
     if (MpvPluginConfig->StereoDownmix)
     {
       check_error(mpv_set_option_string(hMpv, "ad-lavc-downmix", "yes"));
@@ -562,6 +565,8 @@ void cMpvPlayer::Shutdown()
     ChangeFrameRate(OriginalFps);
     OriginalFps = -1;
   }
+  Setup.CurrentVolume  = cDevice::CurrentVolume();
+  Setup.Save();
 }
 
 void cMpvPlayer::SwitchOsdToMpv()
