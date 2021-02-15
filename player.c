@@ -545,8 +545,8 @@ void cMpvPlayer::Shutdown()
   MpvPluginConfig->TitleOverride = "";
   ChapterTitles.clear();
   PlayerChapters.clear();
-      ListTitles.clear();
-      ListFilenames.clear();
+  ListTitles.clear();
+  ListFilenames.clear();
 
   if (ObserverThreadHandle)
     pthread_cancel(ObserverThreadHandle);
@@ -686,7 +686,7 @@ void cMpvPlayer::SendCommand(const char *cmd, ...)
 void cMpvPlayer::PlayNew(string Filename)
 {
   const char *cmd[] = {"loadfile", Filename.c_str(), NULL};
-  if (MpvPluginConfig->SavePos)
+  if (MpvPluginConfig->SavePos && !isNetwork)
     SavePosPlayer();
   mpv_command(hMpv, cmd);
 }
