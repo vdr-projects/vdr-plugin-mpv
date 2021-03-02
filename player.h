@@ -35,6 +35,9 @@ class cMpvPlayer:public cPlayer
     void HandleTracksChange();                    // handle mpv track information
     static void *ObserverThread(void *handle);
 
+    pthread_t XEventThreadHandle;     // Xorg event thread
+    static void *XEventThread(void *handle);
+
     // Player status variables
     int PlayerPaused;                 // player paused
     int PlayerRecord;                 // player record
@@ -113,7 +116,7 @@ class cMpvPlayer:public cPlayer
     int CurrentFps() { return PlayerFps; }
     string CurrentFile() { return PlayerFilename; }
     int CurrentPlaybackSpeed() { return PlayerSpeed; }
-    int ChapterStartTime(unsigned int Chapter) { if (Chapter <= PlayerChapters.size()) return PlayerChapters[Chapter-1]; else return 0; }
+    int ChapterStartTime(unsigned int Chapter) {if (Chapter <= PlayerChapters.size()) return PlayerChapters[Chapter-1]; else return 0; }
     string ChapterTitle(unsigned int Chapter) {if (Chapter <= ChapterTitles.size() && Chapter) return ChapterTitles[Chapter-1]; else return ""; }
     string MediaTitle() { return mediaTitle; }
     string ListTitle(unsigned int pos) {if (pos <= ListTitles.size() && pos) return ListTitles[pos-1]; else return ""; }

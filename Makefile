@@ -86,13 +86,17 @@ DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -D_GNU_SOURCE $(CONFIG) \
 DEFINES += -DPLGRESDIR='"$(PLGRESDIR)"'
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o config.o control.o filebrowser.o menu_options.o osd.o player.o setup.o status.o
+OBJS = $(PLUGIN).o config.o control.o filebrowser.o menu_options.o osd.o remote.o player.o setup.o status.o
 
 ### The main target:
 
 all: $(SOFILE) i18n
 
 ### Implicit rules:
+
+%.o: %.cpp
+	@echo CXX $@
+	$(Q)$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) -o $@ $<
 
 %.o: %.c
 	@echo CC $@
@@ -103,7 +107,7 @@ all: $(SOFILE) i18n
 MAKEDEP = $(CXX) -MM -MG
 DEPFILE = .dependencies
 $(DEPFILE): Makefile
-	@$(MAKEDEP) $(CXXFLAGS) $(DEFINES) $(INCLUDES) $(OBJS:%.o=%.c) > $@
+	@$(MAKEDEP) $(CXXFLAGS) $(DEFINES) $(INCLUDES) $(wildcard $(OBJS:%.o=%.c)) > $@
 
 -include $(DEPFILE)
 
