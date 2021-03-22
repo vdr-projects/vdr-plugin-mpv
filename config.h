@@ -48,7 +48,7 @@ class cMpvPluginConfig
     int RefreshRate;                // enable modeline switching
     string VideoOut;                // video out device
     string HwDec;                   // hwdec codecs
-    int UseGlx;                     // enable use GLX with X11, because mpv use EGL by default.
+    string GpuCtx;                  // gpu context
     string AudioOut;                // audio out device
     string DiscDevice;              // optical disc device
     string Languages;               // language string for audio and subtitle TODO move to Setup menu
