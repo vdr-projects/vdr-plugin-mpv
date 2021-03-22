@@ -397,10 +397,7 @@ void cMpvPlayer::PlayerStart()
 
   check_error(mpv_set_option_string(hMpv, "vo", MpvPluginConfig->VideoOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()));
-  if (MpvPluginConfig->UseGlx)
-  {
-    check_error(mpv_set_option_string(hMpv, "gpu-context", "x11"));
-  }
+  check_error(mpv_set_option_string(hMpv, "gpu-context", MpvPluginConfig->GpuCtx.c_str()));
   if (strcmp(MpvPluginConfig->Geometry.c_str(),""))
   {
     check_error(mpv_set_option_string(hMpv, "geometry", MpvPluginConfig->Geometry.c_str()));
