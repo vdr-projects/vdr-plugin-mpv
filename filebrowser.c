@@ -201,6 +201,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
       // first let VDR handle those keys or we get the previous item
       State = cOsdMenu::ProcessKey(Key);
       item = (cMpvFilebrowserMenuItem *) Get(Current());
+      if (!item) break;
       currentItem = item->Text();
 #ifdef USE_DISC
       SetHelp(tr("Disc"), item->IsDirectory() ? tr("PlayDir") : NULL, tr("Shuffle"), NULL);

@@ -968,6 +968,6 @@ void cMpvPlayer::SetVolume(int Volume)
 {
   if (MpvPluginConfig->SoftVol)
     SendCommand("set volume %d\n", Volume);
-  else
+  else if (PlayerIsRunning())
     mpv_set_property_string(hMpv, "ao-volume", std::to_string(Volume).c_str());
 }
