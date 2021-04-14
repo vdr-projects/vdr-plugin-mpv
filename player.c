@@ -349,12 +349,22 @@ void cMpvPlayer::PlayerHideCursor()
       }
       //hide cursor
       if (VideoWindow) {
+        xcb_get_geometry_cookie_t geocookie;
+        xcb_get_geometry_reply_t *georeply;
+
         xcb_create_pixmap(Connect, 1, pixmap, VideoWindow, 1, 1);
         cursor = xcb_generate_id(Connect);
         xcb_create_cursor(Connect, cursor, pixmap, pixmap, 0, 0, 0, 0, 0, 0, 1, 1);
 
         values[0] = cursor;
         xcb_change_window_attributes(Connect, VideoWindow, XCB_CW_CURSOR, values);
+        //get geometry
+        geocookie = xcb_get_geometry(Connect, VideoWindow);
+        georeply = xcb_get_geometry_reply(Connect, geocookie, NULL);
+        if (georeply) {
+          windowWidth = georeply->width;
+          windowHeight = georeply->height;
+        }
       }
     }
     free(reply);
