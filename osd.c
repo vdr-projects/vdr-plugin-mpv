@@ -30,8 +30,6 @@ cMpvOsd::cMpvOsd(int Left, int Top, uint Level, cMpvPlayer *player)
 {
   Player = player;
 
-//  int OsdAreaWidth = OsdWidth() + cOsd::Left();
-//  int OsdAreaHeight = OsdHeight() + cOsd::Top();
   int OsdAreaWidth = Player->WindowWidth();
   int OsdAreaHeight = Player->WindowHeight();
 
@@ -92,22 +90,28 @@ void cMpvOsd::WriteToMpv(int sw, int sh, int x, int y, int w, int h, const uint8
   char cmd[64];
   double scalew, scaleh;
 
+  int winWidth;
+  int winHeight;
   int osdWidth = 0;
   int osdHeight = 0;
   double Aspect;
 
   cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, Aspect);
+  winWidth = Player->WindowWidth();
+  winHeight = Player->WindowHeight();
+  if (!winWidth) winWidth = osdWidth;
+  if (!winHeight) winHeight = osdHeight;
 
-  scalew = (double) Player->WindowWidth() / osdWidth;
-  scaleh = (double) Player->WindowHeight() / osdHeight;
+  scalew = (double) winWidth / osdWidth;
+  scaleh = (double) winHeight / osdHeight;
 
   for (sy = 0; sy < h; ++sy) {
     for (sx = 0; sx < w; ++sx) {
       pos=0;
-      pos = pos + 4 * Player->WindowWidth() * (int)(scaleh *(sy + y));
+      pos = pos + 4 * winWidth * (int)(scaleh *(sy + y));
       pos = pos + 4 * (int)(scalew *(sx + x));
 
-      if ((pos + 3) > (Player->WindowWidth() * Player->WindowHeight() * 4)) break; //memory overflow prevention
+      if ((pos + 3) > (winWidth * winHeight * 4)) break; //memory overflow prevention
       pOsd[pos + 0] = argb[(w * sy + sx) * 4 + 0];
       pOsd[pos + 1] = argb[(w * sy + sx) * 4 + 1];
       pOsd[pos + 2] = argb[(w * sy + sx) * 4 + 2];
@@ -115,27 +119,27 @@ void cMpvOsd::WriteToMpv(int sw, int sh, int x, int y, int w, int h, const uint8
 
       //upscale
       if (scalew > 1.0) {
-        if ((pos + 7) > (Player->WindowWidth() * Player->WindowHeight() * 4)) break; //memory overflow prevention
+        if ((pos + 7) > (winWidth * winHeight * 4)) break; //memory overflow prevention
         pOsd[pos + 4] = argb[(w * sy + sx) * 4 + 0];
         pOsd[pos + 5] = argb[(w * sy + sx) * 4 + 1];
         pOsd[pos + 6] = argb[(w * sy + sx) * 4 + 2];
         pOsd[pos + 7] = argb[(w * sy + sx) * 4 + 3];
 
-        if ((pos + 3 + 4 * Player->WindowWidth()) > (Player->WindowWidth() * Player->WindowHeight() * 4)) break; //memory overflow prevention
-        pOsd[pos + 0 + 4 * Player->WindowWidth()] = argb[(w * sy + sx) * 4 + 0];
-        pOsd[pos + 1 + 4 * Player->WindowWidth()] = argb[(w * sy + sx) * 4 + 1];
-        pOsd[pos + 2 + 4 * Player->WindowWidth()] = argb[(w * sy + sx) * 4 + 2];
-        pOsd[pos + 3 + 4 * Player->WindowWidth()] = argb[(w * sy + sx) * 4 + 3];
+        if ((pos + 3 + 4 * winWidth) > (winWidth * winHeight * 4)) break; //memory overflow prevention
+        pOsd[pos + 0 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 0];
+        pOsd[pos + 1 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 1];
+        pOsd[pos + 2 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 2];
+        pOsd[pos + 3 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 3];
 
-        if ((pos + 7 + 4 * Player->WindowWidth()) > (Player->WindowWidth() * Player->WindowHeight() * 4)) break; //memory overflow prevention
-        pOsd[pos + 4 + 4 * Player->WindowWidth()] = argb[(w * sy + sx) * 4 + 0];
-        pOsd[pos + 5 + 4 * Player->WindowWidth()] = argb[(w * sy + sx) * 4 + 1];
-        pOsd[pos + 6 + 4 * Player->WindowWidth()] = argb[(w * sy + sx) * 4 + 2];
-        pOsd[pos + 7 + 4 * Player->WindowWidth()] = argb[(w * sy + sx) * 4 + 3];
+        if ((pos + 7 + 4 * winWidth) > (winWidth * winHeight * 4)) break; //memory overflow prevention
+        pOsd[pos + 4 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 0];
+        pOsd[pos + 5 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 1];
+        pOsd[pos + 6 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 2];
+        pOsd[pos + 7 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 3];
       }
     }
   }
-  snprintf (cmd, sizeof(cmd), "overlay-add 1 0 0 @%d  0 \"bgra\" %d %d %d\n", fdOsd, Player->WindowWidth(), Player->WindowHeight(), Player->WindowWidth() * 4);
+  snprintf (cmd, sizeof(cmd), "overlay-add 1 0 0 @%d  0 \"bgra\" %d %d %d\n", fdOsd, winWidth, winHeight, winWidth * 4);
   Player->SendCommand (cmd);
 }
 

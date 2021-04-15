@@ -19,7 +19,7 @@
 #include "menu_options.h"
 #include "mpv_service.h"
 
-static const char *VERSION = "1.2.0"
+static const char *VERSION = "1.2.1"
 #ifdef GIT_REV
     "-GIT" GIT_REV
 #endif
