@@ -20,6 +20,10 @@
 #include <X11/Xlib-xcb.h>
 #include <X11/Xutil.h>
 
+#ifdef USE_DRM
+#include <xf86drmMode.h>
+#endif
+
 using std::vector;
 
 #define MPV_OBSERVE_TIME_POS 1
@@ -174,6 +178,10 @@ void *cMpvPlayer::ObserverThread(void *handle)
 
       case MPV_EVENT_VIDEO_RECONFIG :
           Player->PlayerHideCursor();
+#ifdef USE_DRM
+          if (!VideoWindow)
+            Player->PlayerGetDRM();
+#endif
       break;
 
       case MPV_EVENT_NONE :
@@ -377,6 +385,41 @@ void cMpvPlayer::PlayerHideCursor()
 
   XFlush(Dpy);
 }
+
+#ifdef USE_DRM
+void cMpvPlayer::PlayerGetDRM()
+{
+  int fd, i;
+  drmModeRes *resources;
+  drmModeConnector *connector;
+  drmModeModeInfo mode;
+
+  fd = open("/dev/dri/card0", O_RDWR);
+  if (fd < 0) return;
+
+  resources = drmModeGetResources(fd);
+  if (resources != NULL) {
+    for(i = 0; i < resources->count_connectors; ++i) {
+      connector = drmModeGetConnector(fd, resources->connectors[i]);
+      if(connector != NULL) {
+        if(connector->connection == DRM_MODE_CONNECTED && connector->count_modes > 0)
+          break;
+        drmModeFreeConnector(connector);
+      }
+    }
+    if(i < resources->count_connectors) {
+      mode = connector->modes[0];
+      windowWidth = mode.hdisplay;
+      windowHeight = mode.vdisplay;
+      drmModeFreeConnector(connector);
+    } else
+      esyslog("No active connector found\n");
+
+    drmModeFreeResources(resources);
+    close(fd);
+  }
+}
+#endif
 
 void cMpvPlayer::PlayerStart()
 {
