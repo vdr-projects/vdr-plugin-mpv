@@ -43,6 +43,7 @@ using std::vector;
 volatile int cMpvPlayer::running = 0;
 cMpvPlayer *cMpvPlayer::PlayerHandle = NULL;
 std::string LocaleSave;
+int drm_ctx = 0;
 
 Display *Dpy = NULL;
 xcb_connection_t *Connect;
@@ -177,9 +178,10 @@ void *cMpvPlayer::ObserverThread(void *handle)
       break;
 
       case MPV_EVENT_VIDEO_RECONFIG :
-          Player->PlayerHideCursor();
+          if(!drm_ctx)
+            Player->PlayerHideCursor();
 #ifdef USE_DRM
-          if (!VideoWindow)
+          else
             Player->PlayerGetDRM();
 #endif
       break;
@@ -451,6 +453,10 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "vo", MpvPluginConfig->VideoOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()));
   check_error(mpv_set_option_string(hMpv, "gpu-context", MpvPluginConfig->GpuCtx.c_str()));
+  if (!strcmp(MpvPluginConfig->GpuCtx.c_str(),"drm"))
+  {
+    drm_ctx = 1;
+  }
   if (strcmp(MpvPluginConfig->Geometry.c_str(),""))
   {
     check_error(mpv_set_option_string(hMpv, "geometry", MpvPluginConfig->Geometry.c_str()));
@@ -552,9 +558,11 @@ void cMpvPlayer::PlayerStart()
   // start thread to observe and react on mpv events
   pthread_create(&ObserverThreadHandle, NULL, ObserverThread, this);
 
-  pthread_create(&XEventThreadHandle, NULL, XEventThread, this);
-
-  RemoteStart();
+  if (!drm_ctx)
+  {
+    pthread_create(&XEventThreadHandle, NULL, XEventThread, this);
+    RemoteStart();
+  }
 }
 
 void cMpvPlayer::HandlePropertyChange(mpv_event *event)
@@ -715,14 +723,16 @@ void cMpvPlayer::Shutdown()
 {
   RemoteStop();
 
-  if (XEventThreadHandle) {
-    void *res;
-    int s;
-    pthread_cancel(XEventThreadHandle);
-    while(res != PTHREAD_CANCELED) {
-      s= pthread_join(XEventThreadHandle, &res);
-      esyslog("cansel %d\n",s);
-      if (s) break;
+  if(!drm_ctx) {
+    if (XEventThreadHandle) {
+      void *res;
+      int s;
+      pthread_cancel(XEventThreadHandle);
+      while(res != PTHREAD_CANCELED) {
+        s= pthread_join(XEventThreadHandle, &res);
+        esyslog("cansel %d\n",s);
+        if (s) break;
+      }
     }
   }
 
@@ -739,21 +749,23 @@ void cMpvPlayer::Shutdown()
 
   VideoWindow = 0;
 
-  if (cursor != XCB_NONE) {
-    xcb_free_cursor(Connect, cursor);
-    cursor = XCB_NONE;
-  }
-  if (pixmap != XCB_NONE) {
-    xcb_free_pixmap(Connect, pixmap);
-    pixmap = XCB_NONE;
-  }
-  if (Connect) {
-    xcb_flush(Connect);
-    Connect = NULL;
-  }
-  if (Dpy) {
-    XFlush(Dpy);
-    Dpy = NULL;
+  if (!drm_ctx) {
+    if (cursor != XCB_NONE) {
+      xcb_free_cursor(Connect, cursor);
+      cursor = XCB_NONE;
+    }
+    if (pixmap != XCB_NONE) {
+      xcb_free_pixmap(Connect, pixmap);
+      pixmap = XCB_NONE;
+    }
+    if (Connect) {
+      xcb_flush(Connect);
+      Connect = NULL;
+    }
+    if (Dpy) {
+      XFlush(Dpy);
+      Dpy = NULL;
+    }
   }
 #if MPV_CLIENT_API_VERSION >= MPV_MAKE_VERSION(1,29)
   mpv_destroy(hMpv);
@@ -796,7 +808,7 @@ bool cMpvPlayer::IsPlaylist(string File)
 void cMpvPlayer::ChangeFrameRate(int TargetRate)
 {
 #ifdef USE_XRANDR
-  if (!MpvPluginConfig->RefreshRate)
+  if (!MpvPluginConfig->RefreshRate || drm_ctx)
     return;
 
   Display *Dpl;

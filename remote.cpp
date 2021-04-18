@@ -146,6 +146,8 @@ extern "C" void RemoteStart()
 
 extern "C" void RemoteStop()
 {
-	delete csoft;
-	csoft = NULL;
+	if (csoft) {
+	    delete csoft;
+	    csoft = NULL;
+	}
 }
