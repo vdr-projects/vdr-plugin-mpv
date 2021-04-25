@@ -453,7 +453,7 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "vo", MpvPluginConfig->VideoOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()));
   check_error(mpv_set_option_string(hMpv, "gpu-context", MpvPluginConfig->GpuCtx.c_str()));
-  if (!strcmp(MpvPluginConfig->GpuCtx.c_str(),"drm"))
+  if (!strcmp(MpvPluginConfig->GpuCtx.c_str(),"drm") || !strcmp(MpvPluginConfig->VideoOut.c_str(),"drm"))
   {
     drm_ctx = 1;
   }
