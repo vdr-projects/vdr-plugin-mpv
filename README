@@ -23,7 +23,7 @@ vdr-mpv is a fork of the vdr-play plugin from Johns. It uses libmpv for playing
 media (video, audio, picture) in VDR and also displays the VDR OSD (On Screen Display) during playback.
 You can play internet or network streams also. For this you need make mpv with lua script
 and youtube-dl (for youtube stream).
-You can record some network stream, and play it like normal vdr recordings. This is experimental mpv
+You can record some network stream, and play it like normal vdr recordings. This is an experimental mpv
 function, so some streams may not be recorded correctly. Recording is made to the vdr video directory.
 
 Requirements
@@ -103,7 +103,7 @@ Command line arguments
 
 -g geometry
   You can set X11 geometry with this parameter [W[xH]][+-x+-y][/WS] or x:y.
-  But size of OSD get from softhddevice geometry!!!
+  Resolution of OSD get from softhddevice settings. OSD is scaled to video size.
 
 Plugin setup options
 --------------------
