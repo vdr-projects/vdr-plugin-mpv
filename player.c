@@ -862,6 +862,8 @@ void cMpvPlayer::ScaleVideo(int x, int y, int width, int height)
   int osdWidth, osdHeight;
   double Aspect;
   cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, Aspect);
+  mpv_get_property(hMpv, "video-params/aspect", MPV_FORMAT_DOUBLE, &Aspect);
+  if (Aspect > 1.77) Aspect = 1.77;
 
   if(!x && !y && !width && !height)
   {
@@ -878,7 +880,7 @@ void cMpvPlayer::ScaleVideo(int x, int y, int width, int height)
     err = snprintf (buffer, sizeof(buffer), "%d:%d", height, osdHeight);
     if (err > 0)
       mpv_set_property_string(hMpv, "video-scale-y", buffer);
-    err = snprintf (buffer, sizeof(buffer), "%d:%d", x - (osdWidth - width) / 2, width);
+    err = snprintf (buffer, sizeof(buffer), "%d:%d", x - (int)((osdWidth - width) * Aspect / 3.54), width);
     if (err > 0)
       mpv_set_property_string(hMpv, "video-pan-x", buffer);
     err = snprintf (buffer, sizeof(buffer), "%d:%d", y - (osdHeight - height) / 2,height);

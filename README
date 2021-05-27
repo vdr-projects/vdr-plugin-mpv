@@ -103,7 +103,7 @@ Command line arguments
 
 -g geometry
   You can set X11 geometry with this parameter [W[xH]][+-x+-y][/WS] or x:y.
-  Resolution of OSD get from softhddevice settings. OSD is scaled to video size.
+  Resolution of OSD get from settings of output plugin (softhd*). OSD is scaled to video size.
 
 Plugin setup options
 --------------------
