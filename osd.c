@@ -55,7 +55,6 @@ cMpvOsd::~cMpvOsd()
   dsyslog("[mpv] %s\n", __FUNCTION__);
 #endif
   SetActive(false);
-
   if (cMpvPlayer::PlayerIsRunning())
     Player->OsdClose();
 
@@ -95,6 +94,7 @@ void cMpvOsd::WriteToMpv(int sw, int sh, int x, int y, int w, int h, const uint8
   int osdWidth = 0;
   int osdHeight = 0;
   double Aspect;
+  int a;
 
   cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, Aspect);
   winWidth = Player->WindowWidth();
@@ -112,30 +112,23 @@ void cMpvOsd::WriteToMpv(int sw, int sh, int x, int y, int w, int h, const uint8
       pos = pos + 4 * (int)(scalew *(sx + x));
 
       if ((pos + 3) > (winWidth * winHeight * 4)) break; //memory overflow prevention
-      pOsd[pos + 0] = argb[(w * sy + sx) * 4 + 0];
-      pOsd[pos + 1] = argb[(w * sy + sx) * 4 + 1];
-      pOsd[pos + 2] = argb[(w * sy + sx) * 4 + 2];
-      pOsd[pos + 3] = argb[(w * sy + sx) * 4 + 3];
+      for (a = 0; a < 4; ++a)
+        pOsd[pos + a] = argb[(w * sy + sx) * 4 + a];
 
       //upscale
       if (scalew > 1.0) {
         if ((pos + 7) > (winWidth * winHeight * 4)) break; //memory overflow prevention
-        pOsd[pos + 4] = argb[(w * sy + sx) * 4 + 0];
-        pOsd[pos + 5] = argb[(w * sy + sx) * 4 + 1];
-        pOsd[pos + 6] = argb[(w * sy + sx) * 4 + 2];
-        pOsd[pos + 7] = argb[(w * sy + sx) * 4 + 3];
+        for (a = 0; a < 4; ++a)
+          pOsd[pos + a + 4] = argb[(w * sy + sx) * 4 + a];
 
         if ((pos + 3 + 4 * winWidth) > (winWidth * winHeight * 4)) break; //memory overflow prevention
-        pOsd[pos + 0 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 0];
-        pOsd[pos + 1 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 1];
-        pOsd[pos + 2 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 2];
-        pOsd[pos + 3 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 3];
+        for (a = 0; a < 4; ++a)
+          pOsd[pos + a + 4 * winWidth] = argb[(w * sy + sx) * 4 + a];
 
         if ((pos + 7 + 4 * winWidth) > (winWidth * winHeight * 4)) break; //memory overflow prevention
-        pOsd[pos + 4 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 0];
-        pOsd[pos + 5 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 1];
-        pOsd[pos + 6 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 2];
-        pOsd[pos + 7 + 4 * winWidth] = argb[(w * sy + sx) * 4 + 3];
+        for (a = 0; a < 4; ++a)
+          pOsd[pos + a + 4 + 4 * winWidth] = argb[(w * sy + sx) * 4 + a];
+
       }
     }
   }
