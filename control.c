@@ -61,6 +61,7 @@ void cMpvControl::ShowProgress(int playlist)
 {
   if (!Player->IsPaused() && LastPlayerCurrent == Player->CurrentPlayTime() && Player->TotalPlayTime() > 0 && !Player->NetworkPlay())
     return;
+
   LastPlayerCurrent = Player->CurrentPlayTime();
 
   if (!DisplayReplay)
@@ -68,7 +69,8 @@ void cMpvControl::ShowProgress(int playlist)
 
   if (!infoVisible)
   {
-    UpdateMarks();
+    if (!Player->NetworkPlay())
+      UpdateMarks();
     infoVisible = true;
     timeoutShow = Setup.ProgressDisplayTime ? (time(0) + Setup.ProgressDisplayTime) : 0;
   }

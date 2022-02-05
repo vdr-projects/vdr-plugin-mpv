@@ -39,6 +39,7 @@ using std::vector;
 #define MPV_OBSERVE_LIST_POS 11
 #define MPV_OBSERVE_LIST_COUNT 12
 #define MPV_OBSERVE_VIA_NET 13
+#define MPV_OBSERVE_TRACK_LIST 14
 
 volatile int cMpvPlayer::running = 0;
 cMpvPlayer *cMpvPlayer::PlayerHandle = NULL;
@@ -145,6 +146,7 @@ void *cMpvPlayer::ObserverThread(void *handle)
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_LIST_POS, "playlist-pos-1", MPV_FORMAT_INT64);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_LIST_COUNT, "playlist-count", MPV_FORMAT_INT64);
   mpv_observe_property(Player->hMpv, MPV_OBSERVE_VIA_NET, "demuxer-via-network", MPV_FORMAT_FLAG);
+  mpv_observe_property(Player->hMpv, MPV_OBSERVE_TRACK_LIST, "track-list", MPV_FORMAT_NODE);
 
   while (Player->PlayerIsRunning())
   {
@@ -172,11 +174,11 @@ void *cMpvPlayer::ObserverThread(void *handle)
           esyslog("[mpv]: %s\n", msg->text);
 #endif
       break;
-
+#if MPV_CLIENT_API_VERSION < MPV_MAKE_VERSION(2,0)
       case MPV_EVENT_TRACKS_CHANGED :
         Player->HandleTracksChange();
       break;
-
+#endif
       case MPV_EVENT_VIDEO_RECONFIG :
           if(!drm_ctx)
             Player->PlayerHideCursor();
@@ -188,22 +190,24 @@ void *cMpvPlayer::ObserverThread(void *handle)
 
       case MPV_EVENT_NONE :
       case MPV_EVENT_END_FILE :
+#if MPV_CLIENT_API_VERSION < MPV_MAKE_VERSION(2,0)
       case MPV_EVENT_PAUSE :
       case MPV_EVENT_UNPAUSE :
+      case MPV_EVENT_TRACK_SWITCHED :
+      case MPV_EVENT_SCRIPT_INPUT_DISPATCH :
+      case MPV_EVENT_METADATA_UPDATE :
+      case MPV_EVENT_CHAPTER_CHANGE :
+#endif
       case MPV_EVENT_FILE_LOADED :
       case MPV_EVENT_GET_PROPERTY_REPLY :
       case MPV_EVENT_SET_PROPERTY_REPLY :
       case MPV_EVENT_COMMAND_REPLY :
       case MPV_EVENT_START_FILE :
-      case MPV_EVENT_TRACK_SWITCHED :
       case MPV_EVENT_IDLE :
       case MPV_EVENT_TICK :
-      case MPV_EVENT_SCRIPT_INPUT_DISPATCH :
       case MPV_EVENT_CLIENT_MESSAGE :
       case MPV_EVENT_AUDIO_RECONFIG :
-      case MPV_EVENT_METADATA_UPDATE :
       case MPV_EVENT_SEEK :
-      case MPV_EVENT_CHAPTER_CHANGE :
       default :
         dsyslog("[mpv]: event: %d %s\n", event->event_id, mpv_event_name(event->event_id));
       break;
@@ -619,7 +623,11 @@ void cMpvPlayer::HandlePropertyChange(mpv_event *event)
     case MPV_OBSERVE_CHAPTER :
       PlayerChapter = (int)*(int64_t*)property->data;
     break;
-
+#if MPV_CLIENT_API_VERSION >= MPV_MAKE_VERSION(2,0)
+    case MPV_OBSERVE_TRACK_LIST :
+        HandleTracksChange();
+    break;
+#endif
     case MPV_OBSERVE_PAUSE :
       PlayerPaused = (int)*(int64_t*)property->data;
     break;
@@ -767,6 +775,7 @@ void cMpvPlayer::Shutdown()
       Dpy = NULL;
     }
   }
+
 #if MPV_CLIENT_API_VERSION >= MPV_MAKE_VERSION(1,29)
   mpv_destroy(hMpv);
 #else
@@ -862,6 +871,8 @@ void cMpvPlayer::ScaleVideo(int x, int y, int width, int height)
   int osdWidth, osdHeight;
   double Aspect;
   cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, Aspect);
+  mpv_get_property(hMpv, "video-params/aspect", MPV_FORMAT_DOUBLE, &Aspect);
+  if (Aspect > 1.77) Aspect = 1.77;
 
   if(!x && !y && !width && !height)
   {
@@ -878,7 +889,7 @@ void cMpvPlayer::ScaleVideo(int x, int y, int width, int height)
     err = snprintf (buffer, sizeof(buffer), "%d:%d", height, osdHeight);
     if (err > 0)
       mpv_set_property_string(hMpv, "video-scale-y", buffer);
-    err = snprintf (buffer, sizeof(buffer), "%d:%d", x - (osdWidth - width) / 2, width);
+    err = snprintf (buffer, sizeof(buffer), "%d:%d", x - (int)((osdWidth - width) * Aspect / 3.54), width);
     if (err > 0)
       mpv_set_property_string(hMpv, "video-pan-x", buffer);
     err = snprintf (buffer, sizeof(buffer), "%d:%d", y - (osdHeight - height) / 2,height);
