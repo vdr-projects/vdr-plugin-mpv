@@ -117,18 +117,12 @@ void cMpvOsd::WriteToMpv(int sw, int sh, int x, int y, int w, int h, const uint8
 
       //upscale
       if (scalew > 1.0) {
-        if ((pos + 7) > (winWidth * winHeight * 4)) break; //memory overflow prevention
-        for (a = 0; a < 4; ++a)
+        if ((pos + 7 + 4 + winWidth) > (winWidth * winHeight * 4)) break; //memory overflow prevention
+        for (a = 0; a < 4; ++a) {
           pOsd[pos + a + 4] = argb[(w * sy + sx) * 4 + a];
-
-        if ((pos + 3 + 4 * winWidth) > (winWidth * winHeight * 4)) break; //memory overflow prevention
-        for (a = 0; a < 4; ++a)
           pOsd[pos + a + 4 * winWidth] = argb[(w * sy + sx) * 4 + a];
-
-        if ((pos + 7 + 4 * winWidth) > (winWidth * winHeight * 4)) break; //memory overflow prevention
-        for (a = 0; a < 4; ++a)
           pOsd[pos + a + 4 + 4 * winWidth] = argb[(w * sy + sx) * 4 + a];
-
+        }
       }
     }
   }
