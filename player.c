@@ -17,8 +17,6 @@
 #ifdef USE_XRANDR
 #include <X11/extensions/Xrandr.h>
 #endif
-#include <X11/Xlib-xcb.h>
-#include <X11/Xutil.h>
 
 #ifdef USE_DRM
 #include <xf86drmMode.h>
@@ -47,8 +45,8 @@ std::string LocaleSave;
 int drm_ctx = 0;
 
 Display *Dpy = NULL;
-xcb_connection_t *Connect;
-xcb_window_t VideoWindow;
+xcb_connection_t *Connect = NULL;
+xcb_window_t VideoWindow = 0;
 xcb_pixmap_t pixmap = XCB_NONE;
 xcb_cursor_t cursor = XCB_NONE;
 
@@ -76,7 +74,7 @@ void *cMpvPlayer::XEventThread(void *handle)
   while (Player->PlayerIsRunning())
   {
     if(Dpy && Connect && VideoWindow) {
-        XWindowEvent(Dpy, VideoWindow, KeyPressMask, &event);
+        XWindowEvent(Dpy, VideoWindow, KeyPressMask|StructureNotifyMask|SubstructureNotifyMask, &event);
         switch (event.type) {
           case KeyPress:
 	    letter_len =
@@ -105,6 +103,13 @@ void *cMpvPlayer::XEventThread(void *handle)
 	    }
 	    FeedKeyPress("XKeySym", keynam, 0, 0, letter);
             break;
+          case ConfigureNotify:
+	    Player->windowWidth = event.xconfigure.width;
+	    Player->windowHeight = event.xconfigure.height;
+	    Player->windowX = event.xconfigure.x;
+	    Player->windowY = event.xconfigure.y;
+	    Player->OsdClose();
+            break; 
           default:
             break;
         }
@@ -180,8 +185,10 @@ void *cMpvPlayer::ObserverThread(void *handle)
       break;
 #endif
       case MPV_EVENT_VIDEO_RECONFIG :
-          if(!drm_ctx)
+          if(!drm_ctx) {
+            Player->PlayerGetWindow("- mpv", &Connect, VideoWindow, Player->windowWidth, Player->windowHeight, Player->windowX, Player->windowY);
             Player->PlayerHideCursor();
+          }
 #ifdef USE_DRM
           else
             Player->PlayerGetDRM();
@@ -284,7 +291,7 @@ double cMpvPlayer::FramesPerSecond()
   return CurrentFps();
 }
 
-void cMpvPlayer::PlayerHideCursor()
+void cMpvPlayer::PlayerGetWindow(string need, xcb_connection_t **connect, xcb_window_t &window, int &width, int &height, int &x, int &y)
 {
   int screen_nr;
   int i;
@@ -294,40 +301,39 @@ void cMpvPlayer::PlayerHideCursor()
   xcb_query_tree_cookie_t  cookie;
   xcb_query_tree_reply_t *reply;
   xcb_window_t *child;
+  xcb_window_t parent = 0;
 
   if (!Dpy)
     Dpy = XOpenDisplay(MpvPluginConfig->X11Display.c_str());
   if (!Dpy) return;
 
-  if (!Connect)
-    Connect = XGetXCBConnection(Dpy);
-  if (!Connect) return;
+  if (!*connect)
+    *connect = XGetXCBConnection(Dpy);
+  if (!*connect) return;
 
-  if(!VideoWindow)
+  if(!window)
   {
     screen_nr = DefaultScreen(Dpy);
     //get root screen
-    screen_iter = xcb_setup_roots_iterator(xcb_get_setup(Connect));
+    screen_iter = xcb_setup_roots_iterator(xcb_get_setup(*connect));
     for (i = 0; i < screen_nr; ++i)
     {
       xcb_screen_next(&screen_iter);
     }
     screen = screen_iter.data;
     //query child of root
-    cookie = xcb_query_tree(Connect,screen->root);
-    reply = xcb_query_tree_reply(Connect, cookie, 0);
+    cookie = xcb_query_tree(*connect,screen->root);
+    reply = xcb_query_tree_reply(*connect, cookie, 0);
     len = xcb_query_tree_children_length(reply);
 
     if (len)
     {
-      uint32_t values[4];
       xcb_get_property_cookie_t procookie;
       xcb_get_property_reply_t *proreply;
 
       xcb_atom_t property = XCB_ATOM_WM_NAME;
       //get children of root
       child = xcb_query_tree_children(reply);
-      pixmap = xcb_generate_id(Connect);
 
       xcb_query_tree_cookie_t  c_cookie;
       xcb_query_tree_reply_t *c_reply;
@@ -336,8 +342,8 @@ void cMpvPlayer::PlayerHideCursor()
 
       for (i = 0; i < len; i++) {
         //query child of child
-        c_cookie = xcb_query_tree(Connect,child[i]);
-        c_reply = xcb_query_tree_reply(Connect, c_cookie, 0);
+        c_cookie = xcb_query_tree(*connect,child[i]);
+        c_reply = xcb_query_tree_reply(*connect, c_cookie, 0);
         c_len = xcb_query_tree_children_length(c_reply);
 
         if (c_len) {
@@ -347,12 +353,16 @@ void cMpvPlayer::PlayerHideCursor()
 
         for (int o = 0; o < (c_len ? c_len : 1); o++){
           //get child property
-          procookie = xcb_get_property(Connect, 0, c_len ? c_child[o] : child[i], property, XCB_GET_PROPERTY_TYPE_ANY, 0, 1000);
-          if (proreply = xcb_get_property_reply(Connect, procookie, NULL)) {
+          procookie = xcb_get_property(*connect, 0, c_len ? c_child[o] : child[i], property, XCB_GET_PROPERTY_TYPE_ANY, 0, 1000);
+          if (proreply = xcb_get_property_reply(*connect, procookie, NULL)) {
             if (xcb_get_property_value_length(proreply) > 0) {
               string name = (char*)xcb_get_property_value(proreply);
-              if (name.find("- mpv") != string::npos) {
-                  VideoWindow = c_len ? c_child[o] : child[i];
+              if (name.find(need) != string::npos) {
+                  if (!c_len) window = child[i];
+                  else {
+                    window = c_child[o];
+                    parent = child[i];
+                  }
                   break;
               }
             }
@@ -361,34 +371,57 @@ void cMpvPlayer::PlayerHideCursor()
         }
         free(c_reply);
       }
-      //hide cursor
-      if (VideoWindow) {
-        xcb_get_geometry_cookie_t geocookie;
-        xcb_get_geometry_reply_t *georeply;
-
-        xcb_create_pixmap(Connect, 1, pixmap, VideoWindow, 1, 1);
-        cursor = xcb_generate_id(Connect);
-        xcb_create_cursor(Connect, cursor, pixmap, pixmap, 0, 0, 0, 0, 0, 0, 1, 1);
-
-        values[0] = cursor;
-        xcb_change_window_attributes(Connect, VideoWindow, XCB_CW_CURSOR, values);
-        //get geometry
-        geocookie = xcb_get_geometry(Connect, VideoWindow);
-        georeply = xcb_get_geometry_reply(Connect, geocookie, NULL);
-        if (georeply) {
-          windowWidth = georeply->width;
-          windowHeight = georeply->height;
-        }
-      }
     }
     free(reply);
   }
 
-  if (VideoWindow) {
-    XSelectInput (Dpy, VideoWindow, KeyPressMask);
-    XMapWindow (Dpy, VideoWindow); 
+  if (window) {
+    //get geometry
+    xcb_get_geometry_cookie_t geocookie;
+    xcb_get_geometry_reply_t *georeply;
+
+    geocookie = xcb_get_geometry(*connect, window);
+    georeply = xcb_get_geometry_reply(*connect, geocookie, NULL);
+    if (georeply) {
+      width = georeply->width;
+      height = georeply->height;
+      x = georeply->x;
+      y = georeply->y;
+      free(georeply);
+    }
   }
 
+  if (parent) {
+    //get geometry
+    xcb_get_geometry_cookie_t geocookie;
+    xcb_get_geometry_reply_t *georeply;
+
+    geocookie = xcb_get_geometry(*connect, parent);
+    georeply = xcb_get_geometry_reply(*connect, geocookie, NULL);
+    if (georeply) {
+      x += georeply->x;
+      y += georeply->y;
+      free(georeply);
+    }
+  }
+}
+
+void cMpvPlayer::PlayerHideCursor()
+{
+  uint32_t values[4];
+
+  if (VideoWindow && Connect) {
+    pixmap = xcb_generate_id(Connect);
+    xcb_create_pixmap(Connect, 1, pixmap, VideoWindow, 1, 1);
+    cursor = xcb_generate_id(Connect);
+    xcb_create_cursor(Connect, cursor, pixmap, pixmap, 0, 0, 0, 0, 0, 0, 1, 1);
+    values[0] = cursor;
+    xcb_change_window_attributes(Connect, VideoWindow, XCB_CW_CURSOR, values);
+  }
+  if (VideoWindow) {
+    XSelectInput (Dpy, VideoWindow, KeyPressMask|StructureNotifyMask|SubstructureNotifyMask);
+    XMapWindow (Dpy, VideoWindow);
+  }
   XFlush(Dpy);
 }
 
@@ -464,6 +497,10 @@ void cMpvPlayer::PlayerStart()
   if (strcmp(MpvPluginConfig->Geometry.c_str(),""))
   {
     check_error(mpv_set_option_string(hMpv, "geometry", MpvPluginConfig->Geometry.c_str()));
+  } else if (windowWidth && windowHeight) {
+    char geo[25];
+    sprintf(geo, "%dx%d+%d+%d", windowWidth, windowHeight, windowX, windowY);
+    check_error(mpv_set_option_string(hMpv, "geometry", geo));
   }
   if (!MpvPluginConfig->Windowed)
   {

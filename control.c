@@ -14,6 +14,9 @@
 cMpvControl::cMpvControl(string Filename, bool Shuffle)
 :cControl(Player = new cMpvPlayer(Filename.c_str(), Shuffle))
 {
+  int w, h, x, y;
+  xcb_window_t window = 0;
+  xcb_connection_t *connect = NULL;
 #ifdef DEBUG
   dsyslog("[mpv] %s\n", __FUNCTION__);
 #endif
@@ -23,6 +26,14 @@ cMpvControl::cMpvControl(string Filename, bool Shuffle)
     VolumeStatus = new cMpvStatus(Player);
   infoVisible = false;
   timeSearchActive = false;
+  //for window mode get geometry from output plugin
+  if (MpvPluginConfig->Windowed)
+  {
+    Player->PlayerGetWindow("softhddevice", &connect, window, w, h, x, y);
+    Player->SetWindowSize(w, h, x, y);
+    xcb_flush(connect);
+    connect = NULL;
+  }
   cStatus::MsgReplaying(this, Filename.c_str(), Filename.c_str(), true);
 }
 

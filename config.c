@@ -152,6 +152,7 @@ const char *cMpvPluginConfig::CommandLineHelp(void)
 #endif
     "  -m text\ttext displayed in VDR main menu (Default: MPV)\n"
     "  -s\t\tdon't load mpv LUA scripts\n"
+    "  -w windowed mode with X11\n"
     "  -g geometry\t X11 geometry [W[xH]][+-x+-y][/WS] or x:y\n"
     ;
 }
