@@ -13,6 +13,8 @@
 #include <vector>
 #include <vdr/player.h>
 #include <mpv/client.h>
+#include <X11/Xlib-xcb.h>
+#include <X11/Xutil.h>
 
 using std::string;
 using std::vector;
@@ -62,6 +64,8 @@ class cMpvPlayer:public cPlayer
     int isNetwork;                    // detect network stream
     int windowWidth;
     int windowHeight;
+    int windowX;
+    int windowY;
 
   public:
     cMpvPlayer(string Filename, bool Shuffle=false);
@@ -76,6 +80,7 @@ class cMpvPlayer:public cPlayer
     void Shutdown();
     static volatile int PlayerIsRunning() { return running; }
     static cMpvPlayer *Player() { return PlayerHandle; }
+    void PlayerGetWindow(string name, xcb_connection_t **connect, xcb_window_t &window, int &width, int &height, int &x, int &y);
 
     // functions to send commands to mpv
     void SendCommand(const char *cmd, ...);
@@ -104,6 +109,7 @@ class cMpvPlayer:public cPlayer
     void NextPlaylistItem();
     void PreviousPlaylistItem();
     void SetVolume(int Volume);
+    void SetWindowSize(int w, int h, int x, int y) { windowWidth = w; windowHeight = h; windowX = x; windowY = y; }
     void ScaleVideo(int x, int y, int width, int height);
 
     // functions to get different status information about the current playback
