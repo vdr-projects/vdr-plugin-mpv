@@ -29,10 +29,13 @@ cMpvControl::cMpvControl(string Filename, bool Shuffle)
   //for window mode get geometry from output plugin
   if (MpvPluginConfig->Windowed)
   {
-    Player->PlayerGetWindow("softhddevice", &connect, window, w, h, x, y);
-    Player->SetWindowSize(w, h, x, y);
-    xcb_flush(connect);
-    connect = NULL;
+    Player->PlayerGetWindow("softhd", &connect, window, w, h, x, y);
+    if (connect && window)
+    {
+      Player->SetWindowSize(w, h, x, y);
+      xcb_flush(connect);
+      connect = NULL;
+    }
   }
   cStatus::MsgReplaying(this, Filename.c_str(), Filename.c_str(), true);
 }
