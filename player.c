@@ -915,17 +915,31 @@ void cMpvPlayer::ScaleVideo(int x, int y, int width, int height)
   {
     mpv_set_property_string(hMpv, "video-pan-x", "0.0");
     mpv_set_property_string(hMpv, "video-pan-y", "0.0");
+#if MPV_CLIENT_API_VERSION >= MPV_MAKE_VERSION(2,0)
     mpv_set_property_string(hMpv, "video-scale-x", "1.0");
     mpv_set_property_string(hMpv, "video-scale-y", "1.0");
+#else
+    mpv_set_property_string(hMpv, "video-zoom", "0");
+#endif
   }
   else
   {
-    int err = snprintf (buffer, sizeof(buffer), "%d:%d", width, osdWidth);
+    int err;
+#if MPV_CLIENT_API_VERSION >= MPV_MAKE_VERSION(2,0)
+    err = snprintf (buffer, sizeof(buffer), "%d:%d", width, osdWidth);
     if (err > 0)
       mpv_set_property_string(hMpv, "video-scale-x", buffer);
     err = snprintf (buffer, sizeof(buffer), "%d:%d", height, osdHeight);
     if (err > 0)
       mpv_set_property_string(hMpv, "video-scale-y", buffer);
+#else
+    if (osdWidth > width)
+      err = snprintf (buffer, sizeof(buffer), "-%f", ((float)osdWidth/width)/2.0);
+    else
+      err = snprintf (buffer, sizeof(buffer), "%f", ((float)width/osdWidth)/2.0);
+    if (err > 0)
+      mpv_set_property_string(hMpv, "video-zoom", buffer);
+#endif
     err = snprintf (buffer, sizeof(buffer), "%d:%d", x - (int)((osdWidth - width) * Aspect / 3.54), width);
     if (err > 0)
       mpv_set_property_string(hMpv, "video-pan-x", buffer);
