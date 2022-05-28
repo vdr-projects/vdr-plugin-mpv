@@ -26,8 +26,8 @@ cMpvControl::cMpvControl(string Filename, bool Shuffle)
     VolumeStatus = new cMpvStatus(Player);
   infoVisible = false;
   timeSearchActive = false;
-  //for window mode get geometry from output plugin
-  if (MpvPluginConfig->Windowed)
+  //for x11 get geometry from output plugin
+  if (strcmp(MpvPluginConfig->GpuCtx.c_str(),"drm") && strcmp(MpvPluginConfig->VideoOut.c_str(),"drm"))
   {
     Player->PlayerGetWindow("softhd", &connect, window, w, h, x, y);
     if (connect && window)
