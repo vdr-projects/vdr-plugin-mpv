@@ -61,6 +61,15 @@ extern void RemoteStop();
 }
 #endif
 
+// check mpv errors and send them to log
+static inline void check_error(int status)
+{
+  if (status < 0)
+  {
+    esyslog("[mpv] API error: %s\n", mpv_error_string(status));
+  }
+}
+
 void *cMpvPlayer::XEventThread(void *handle)
 {
   XEvent event;
@@ -69,14 +78,40 @@ void *cMpvPlayer::XEventThread(void *handle)
   char buf[64];
   char letter[64];
   int letter_len;
+  static Time clicktime;
+  static bool toggle;
   cMpvPlayer *Player = (cMpvPlayer*) handle;
 
   while (Player->PlayerIsRunning())
   {
     if(Dpy && Connect && VideoWindow) {
-        XWindowEvent(Dpy, VideoWindow, KeyPressMask|StructureNotifyMask|SubstructureNotifyMask, &event);
+        XWindowEvent(Dpy, VideoWindow, KeyPressMask|ButtonPressMask|StructureNotifyMask|SubstructureNotifyMask, &event);
         switch (event.type) {
-          case KeyPress:
+	  case ButtonPress:
+	    if (event.xbutton.button == 1) {
+		Time difftime = event.xbutton.time - clicktime;
+		if (difftime < 500) {
+		    check_error(mpv_set_option_string(Player->hMpv, "fullscreen", toggle ? "yes" : "no"));
+		    toggle = !toggle;
+		}
+		clicktime = event.xbutton.time;
+	    }
+	    else if (event.xbutton.button == 2) {
+		FeedKeyPress("XKeySym", "Ok", 0, 0, NULL);
+	    }
+	    else if (event.xbutton.button == 3) {
+		FeedKeyPress("XKeySym", "Menu", 0, 0, NULL);
+	    }
+	    if (event.xbutton.button == 4) {
+		FeedKeyPress("XKeySym", "Volume+", 0, 0, NULL);
+	    }
+	    if (event.xbutton.button == 5) {
+		FeedKeyPress("XKeySym", "Volume-", 0, 0, NULL);
+	    }
+	    break;
+	  case ButtonRelease:
+	    break;
+	  case KeyPress:
 	    letter_len =
 		XLookupString(&event.xkey, letter, sizeof(letter) - 1, &keysym, NULL);
 	    if (letter_len < 0) {
@@ -120,16 +155,6 @@ void *cMpvPlayer::XEventThread(void *handle)
   dsyslog("[mpv] XEvent thread ended\n");
 #endif
   return handle;
-}
-
-
-// check mpv errors and send them to log
-static inline void check_error(int status)
-{
-  if (status < 0)
-  {
-    esyslog("[mpv] API error: %s\n", mpv_error_string(status));
-  }
 }
 
 void *cMpvPlayer::ObserverThread(void *handle)
@@ -419,7 +444,7 @@ void cMpvPlayer::PlayerHideCursor()
     xcb_change_window_attributes(Connect, VideoWindow, XCB_CW_CURSOR, values);
   }
   if (VideoWindow) {
-    XSelectInput (Dpy, VideoWindow, KeyPressMask|StructureNotifyMask|SubstructureNotifyMask);
+    XSelectInput (Dpy, VideoWindow, KeyPressMask|ButtonPressMask|StructureNotifyMask|SubstructureNotifyMask);
     XMapWindow (Dpy, VideoWindow);
   }
   XFlush(Dpy);
@@ -535,6 +560,7 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "config", "yes"));
   check_error(mpv_set_option_string(hMpv, "ontop", "yes"));
   check_error(mpv_set_option_string(hMpv, "cursor-autohide", "always"));
+  check_error(mpv_set_option_string(hMpv, "input-cursor", "no"));
   check_error(mpv_set_option_string(hMpv, "stop-playback-on-init-failure", "no"));
   check_error(mpv_set_option_string(hMpv, "idle", MpvPluginConfig->ExitAtEnd ? "once" : "yes"));
   check_error(mpv_set_option_string(hMpv, "force-window", "immediate"));

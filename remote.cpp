@@ -53,6 +53,10 @@ class cSoftRemote:public cRemote, private cThread
       Command = code;
       keyReceived.Broadcast();
     }
+
+    void Transfer(eKeys key) {
+       cRemote::Put(key, true);
+    }
 };
 
 void cSoftRemote::Action(void)
@@ -134,6 +138,11 @@ extern "C" void FeedKeyPress(const char *keymap, const char *key, int repeat,
 {
     if (!csoft || !keymap || !key) {
 	return;
+    }
+
+    if (!letter) {
+        csoft->Transfer(cKey::FromString(key));
+        return;
     }
 
     csoft->Receive(key);
