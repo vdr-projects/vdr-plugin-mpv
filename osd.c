@@ -30,8 +30,8 @@ cMpvOsd::cMpvOsd(int Left, int Top, uint Level, cMpvPlayer *player)
 {
   Player = player;
 
-  int OsdAreaWidth = Player->WindowWidth();
-  int OsdAreaHeight = Player->WindowHeight();
+  winWidth = Player->WindowWidth();
+  winHeight = Player->WindowHeight();
 
   fdOsd = open ("/tmp/vdr_mpv_osd", O_CREAT | O_RDWR, S_IWUSR | S_IRUSR);
   if (fdOsd < 0)
@@ -39,10 +39,10 @@ cMpvOsd::cMpvOsd(int Left, int Top, uint Level, cMpvPlayer *player)
     esyslog("[mpv] ERROR! no access to /tmp, no OSD!\n");
     pOsd = NULL;
   }
-  lseek(fdOsd, OsdAreaWidth*OsdAreaHeight*4, SEEK_SET);
+  lseek(fdOsd, winWidth*winHeight*4, SEEK_SET);
   int ret=write(fdOsd, "", 1);
   if (ret > 0)
-      pOsd = (char*) mmap (NULL, OsdAreaWidth*OsdAreaHeight*4, PROT_WRITE, MAP_SHARED, fdOsd, 0);
+      pOsd = (char*) mmap (NULL, winWidth*winHeight*4, PROT_WRITE, MAP_SHARED, fdOsd, 0);
 #ifdef DEBUG
   dsyslog("[mpv] Osd %d %d \n",fdOsd,ret);
 #endif
@@ -55,9 +55,6 @@ cMpvOsd::~cMpvOsd()
   dsyslog("[mpv] %s\n", __FUNCTION__);
 #endif
   SetActive(false);
-  if (cMpvPlayer::PlayerIsRunning())
-    Player->OsdClose();
-
   munmap(pOsd, sizeof(pOsd));
   close(fdOsd);
   remove("/tmp/vdr_mpv_osd");
@@ -79,6 +76,18 @@ void cMpvOsd::SetActive(bool On)
   }
 }
 
+void cMpvOsd::OsdSizeUpdate()
+{
+    winWidth = Player->WindowWidth();
+    winHeight = Player->WindowHeight();
+    munmap(pOsd, sizeof(pOsd));
+    lseek(fdOsd, winWidth*winHeight*4, SEEK_SET);
+    int ret=write(fdOsd, "", 1);
+    if (ret > 0)
+      pOsd = (char*) mmap (NULL, winWidth*winHeight*4, PROT_WRITE, MAP_SHARED, fdOsd, 0);
+    else return;
+}
+
 void cMpvOsd::WriteToMpv(int sw, int sh, int x, int y, int w, int h, const uint8_t * argb)
 {
   if (!cMpvPlayer::PlayerIsRunning() || !pOsd)
@@ -89,16 +98,12 @@ void cMpvOsd::WriteToMpv(int sw, int sh, int x, int y, int w, int h, const uint8
   char cmd[64];
   double scalew, scaleh;
 
-  int winWidth;
-  int winHeight;
   int osdWidth = 0;
   int osdHeight = 0;
   double Aspect;
   int a;
 
   cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, Aspect);
-  winWidth = Player->WindowWidth();
-  winHeight = Player->WindowHeight();
   if (!winWidth) winWidth = osdWidth;
   if (!winHeight) winHeight = osdHeight;
 
@@ -137,6 +142,14 @@ void cMpvOsd::Flush()
     cOsd::SetActive(false);
   if (!Active())
     return;
+
+  if (winWidth && winHeight && (winWidth != Player->WindowWidth() || winHeight != Player->WindowHeight()))
+  {
+    SetActive(false);
+    OsdSizeUpdate();
+    cOsdProvider::UpdateOsdSize(true);
+    return;
+  }
 
   int OsdAreaWidth = OsdWidth() + cOsd::Left();
   int OsdAreaHeight = OsdHeight()+ cOsd::Top();
