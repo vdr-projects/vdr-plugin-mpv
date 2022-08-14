@@ -617,3 +617,8 @@ void cMpvControl::ScaleVideo(int x, int y, int width, int height)
 {
   Player->ScaleVideo(x, y, width, height);
 }
+
+uint8_t *cMpvControl::GrabImage(int *size, int *width, int *height)
+{
+  return Player->GrabImage(size, width, height);
+}

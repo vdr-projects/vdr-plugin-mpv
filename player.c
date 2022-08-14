@@ -680,6 +680,7 @@ void cMpvPlayer::HandlePropertyChange(mpv_event *event)
           ChapterTitles.push_back (Node.u.list->values[i].u.list->values[0].u.string);
           PlayerChapters.push_back (Node.u.list->values[i].u.list->values[1].u.double_);
         }
+        mpv_free_node_contents(&Node);
       }
     break;
 
@@ -736,9 +737,9 @@ void cMpvPlayer::HandlePropertyChange(mpv_event *event)
             if ((int)ListTitles.size() < i + 1) ListTitles.push_back (title.substr(title.find_last_of("/") + 1));
 //            dsyslog("%d %s ---- %s\n",i,ListFilename(i+1).c_str(),ListTitle(i+1).c_str());
           }
+          mpv_free_node_contents(&Node1);
         }
       }
-
     break;
   }
 }
@@ -780,6 +781,7 @@ void cMpvPlayer::HandleTracksChange()
       DeviceSetAvailableTrack(type, i, TrackId, TrackLanguage.c_str(), TrackTitle.c_str());
     }
   }
+  mpv_free_node_contents(&Node);
 }
 
 void cMpvPlayer::OsdClose()
@@ -973,6 +975,37 @@ void cMpvPlayer::ScaleVideo(int x, int y, int width, int height)
     if (err > 0)
       mpv_set_property_string(hMpv, "video-pan-y", buffer);
   }
+}
+
+uint8_t *cMpvPlayer::GrabImage(int *size, int *width, int *height)
+{
+  uint8_t *data = NULL;
+  mpv_byte_array *ba = NULL;
+  mpv_node Node;
+  const char *cmd[] = {"screenshot-raw", "window", NULL};
+
+  dsyslog("[mpv] %s %d %d %d\n", __FUNCTION__, *size, *width, *height);
+
+  mpv_command_ret(hMpv, cmd, &Node);
+  if(Node.format == MPV_FORMAT_NODE_MAP)
+  {
+
+    for (int i=0; i<Node.u.list->num; i++)
+    {
+      if (strcmp(Node.u.list->keys[i], "w") == 0) *width = Node.u.list->values[i].u.int64;
+      if (strcmp(Node.u.list->keys[i], "h") == 0) *height = Node.u.list->values[i].u.int64;
+      if (strcmp(Node.u.list->keys[i], "data") == 0) ba = Node.u.list->values[i].u.ba;
+    }
+
+    data = (uint8_t*)malloc(ba->size);
+    memcpy(data, ba->data, ba->size);
+    *size = ba->size;
+
+    mpv_free_node_contents(&Node);
+    return data;
+  }
+
+  return NULL;
 }
 
 void cMpvPlayer::SendCommand(const char *cmd, ...)
