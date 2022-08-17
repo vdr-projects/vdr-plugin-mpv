@@ -111,6 +111,7 @@ class cMpvPlayer:public cPlayer
     void SetVolume(int Volume);
     void SetWindowSize(int w, int h, int x, int y) { windowWidth = w; windowHeight = h; windowX = x; windowY = y; }
     void ScaleVideo(int x, int y, int width, int height);
+    uint8_t *GrabImage(int *size, int *width, int *height);
 
     // functions to get different status information about the current playback
     int IsPaused() { return PlayerPaused; }
