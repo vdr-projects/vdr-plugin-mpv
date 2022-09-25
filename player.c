@@ -260,6 +260,8 @@ cMpvPlayer::cMpvPlayer(string Filename, bool Shuffle)
   running = 0;
   OriginalFps = -1;
   PlayerRecord = 0;
+  ObserverThreadHandle = 0;
+  XEventThreadHandle = 0;
 }
 
 cMpvPlayer::~cMpvPlayer()
