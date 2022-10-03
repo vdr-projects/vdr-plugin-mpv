@@ -642,7 +642,8 @@ void cMpvPlayer::HandlePropertyChange(mpv_event *event)
     return;
 
   // don't log on time-pos change since this floods the log
-  if (event->reply_userdata != MPV_OBSERVE_TIME_POS)
+  if (event->reply_userdata != MPV_OBSERVE_TIME_POS
+    && event->reply_userdata != MPV_OBSERVE_LENGTH)
   {
     dsyslog("[mpv]: property %s \n", property->name);
   }
