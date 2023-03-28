@@ -521,13 +521,16 @@ void cMpvPlayer::PlayerStart()
   {
     drm_ctx = 1;
   }
-  if (strcmp(MpvPluginConfig->Geometry.c_str(),""))
-  {
-    check_error(mpv_set_option_string(hMpv, "geometry", MpvPluginConfig->Geometry.c_str()));
-  } else if (windowWidth && windowHeight) {
-    char geo[25];
-    sprintf(geo, "%dx%d+%d+%d", windowWidth, windowHeight, windowX, windowY);
-    check_error(mpv_set_option_string(hMpv, "geometry", geo));
+  //no geometry with drm
+  if (!drm_ctx) {
+    if (strcmp(MpvPluginConfig->Geometry.c_str(),""))
+    {
+      check_error(mpv_set_option_string(hMpv, "geometry", MpvPluginConfig->Geometry.c_str()));
+    } else if (windowWidth && windowHeight) {
+      char geo[25];
+      sprintf(geo, "%dx%d+%d+%d", windowWidth, windowHeight, windowX, windowY);
+      check_error(mpv_set_option_string(hMpv, "geometry", geo));
+    }
   }
   if (!MpvPluginConfig->Windowed)
   {
@@ -642,7 +645,8 @@ void cMpvPlayer::HandlePropertyChange(mpv_event *event)
     return;
 
   // don't log on time-pos change since this floods the log
-  if (event->reply_userdata != MPV_OBSERVE_TIME_POS)
+  if (event->reply_userdata != MPV_OBSERVE_TIME_POS
+    && event->reply_userdata != MPV_OBSERVE_LENGTH)
   {
     dsyslog("[mpv]: property %s \n", property->name);
   }
