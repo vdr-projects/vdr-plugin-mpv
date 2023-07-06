@@ -591,8 +591,10 @@ void cMpvPlayer::PlayerStart()
     if (MpvPluginConfig->StereoDownmix)
     {
       check_error(mpv_set_option_string(hMpv, "ad-lavc-downmix", "yes"));
-      check_error(mpv_set_option_string(hMpv, "audio-channels", "2"));
+      check_error(mpv_set_option_string(hMpv, "audio-channels", "stereo"));
     }
+    else
+      check_error(mpv_set_option_string(hMpv, "audio-channels", "7.1,5.1,stereo"));
   }
 
   if (PlayShuffle && IsPlaylist(PlayFilename))
