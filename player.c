@@ -542,14 +542,18 @@ void cMpvPlayer::PlayerStart()
     {
       check_error(mpv_set_option_string(hMpv, "vf", "vavpp=deint=auto"));
     }
-    if (!strcmp(MpvPluginConfig->HwDec.c_str(),"vdpau"))
+    else if (!strcmp(MpvPluginConfig->HwDec.c_str(),"vdpau"))
     {
       check_error(mpv_set_option_string(hMpv, "vf", "vdpaupp=deint=yes:deint-mode=temporal-spatial"));
     }
-    if (!strcmp(MpvPluginConfig->HwDec.c_str(),"cuda"))
+    else if (!strcmp(MpvPluginConfig->HwDec.c_str(),"cuda"))
     {
       check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
       check_error(mpv_set_option_string(hMpv, "vd-lavc-o", "deint=adaptive"));
+    }
+    else
+    {
+      check_error(mpv_set_option_string(hMpv, "deinterlace", "yes"));
     }
   }
   check_error(mpv_set_option_string(hMpv, "audio-device", MpvPluginConfig->AudioOut.c_str()));
@@ -591,8 +595,10 @@ void cMpvPlayer::PlayerStart()
     if (MpvPluginConfig->StereoDownmix)
     {
       check_error(mpv_set_option_string(hMpv, "ad-lavc-downmix", "yes"));
-      check_error(mpv_set_option_string(hMpv, "audio-channels", "2"));
+      check_error(mpv_set_option_string(hMpv, "audio-channels", "stereo"));
     }
+    else
+      check_error(mpv_set_option_string(hMpv, "audio-channels", "7.1,5.1,stereo"));
   }
 
   if (PlayShuffle && IsPlaylist(PlayFilename))
