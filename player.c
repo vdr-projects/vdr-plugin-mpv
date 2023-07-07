@@ -538,15 +538,17 @@ void cMpvPlayer::PlayerStart()
   }
   if (MpvPluginConfig->UseDeinterlace)
   {
-    if (!strcmp(MpvPluginConfig->HwDec.c_str(),"vaapi"))
+    if (strstr(MpvPluginConfig->HwDec.c_str(),"vaapi"))
     {
+      check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
       check_error(mpv_set_option_string(hMpv, "vf", "vavpp=deint=auto"));
     }
-    else if (!strcmp(MpvPluginConfig->HwDec.c_str(),"vdpau"))
+    else if (strstr(MpvPluginConfig->HwDec.c_str(),"vdpau"))
     {
+      check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
       check_error(mpv_set_option_string(hMpv, "vf", "vdpaupp=deint=yes:deint-mode=temporal-spatial"));
     }
-    else if (!strcmp(MpvPluginConfig->HwDec.c_str(),"cuda"))
+    else if (strstr(MpvPluginConfig->HwDec.c_str(),"cuda"))
     {
       check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
       check_error(mpv_set_option_string(hMpv, "vd-lavc-o", "deint=adaptive"));
