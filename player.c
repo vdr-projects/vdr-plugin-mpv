@@ -540,10 +540,12 @@ void cMpvPlayer::PlayerStart()
   {
     if (strstr(MpvPluginConfig->HwDec.c_str(),"vaapi"))
     {
+      check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
       check_error(mpv_set_option_string(hMpv, "vf", "vavpp=deint=auto"));
     }
     else if (strstr(MpvPluginConfig->HwDec.c_str(),"vdpau"))
     {
+      check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
       check_error(mpv_set_option_string(hMpv, "vf", "vdpaupp=deint=yes:deint-mode=temporal-spatial"));
     }
     else if (strstr(MpvPluginConfig->HwDec.c_str(),"cuda"))
