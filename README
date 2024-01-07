@@ -150,7 +150,8 @@ In the browser mode you can use
 
 Red:                    Play selected file
 Green:                  Play selected directory, playlist mode
-Yellow:                 Shuffle playlist
+Yellow:                 Remove selected file or empty directory
+Blue:                   Shuffle playlist
 
 The following remote keys are supported in normal operation (no disc menu active)
 
