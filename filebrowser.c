@@ -269,6 +269,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
       {
         int res;
         res = PlayListCreate(newPath, NULL);
+        ShowDirectory(currentDir);
         if (res != -1)
         {
           Skins.Message(mtError, tr("Not empty directory, can't remove!"));
@@ -281,10 +282,19 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
             if (res)
             {
               Skins.Message(mtError, tr("Unable to remove directory!"));
+              ShowDirectory(currentDir);
+            }
+            else
+            {
+              State = cOsdMenu::ProcessKey(kUp);
+              item = (cMpvFilebrowserMenuItem *) Get(Current());
+              if (!item) break;
+              currentItem = item->Text();
+              ShowDirectory(currentDir);
+              return State;
             }
           }
         }
-        ShowDirectory(currentDir);
       }
       else
       {
@@ -292,11 +302,16 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
         {
           int res;
           res = remove(newPath.c_str());
+          ShowDirectory(currentDir);
           if (res)
           {
             Skins.Message(mtError, tr("Unable to remove file!"));
           }
-          ShowDirectory(currentDir);
+          else
+          {
+            State = cOsdMenu::ProcessKey(kUp);
+            return State;
+          }
         }
       }
       return osContinue;
