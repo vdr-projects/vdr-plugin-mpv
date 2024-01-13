@@ -296,6 +296,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
           {
             Skins.Message(mtError, tr("Unable to remove file!"));
           }
+          ShowDirectory(currentDir);
         }
       }
       return osContinue;
