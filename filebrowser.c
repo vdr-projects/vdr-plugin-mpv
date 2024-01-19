@@ -279,6 +279,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
           if (Skins.Message(mtWarning, tr("Remove empty directory?"), 5) == kOk)
           {
             res = rmdir(newPath.c_str());
+            dsyslog("[mpv] remove %s %d\n", newPath.c_str(), res);
             if (res)
             {
               Skins.Message(mtError, tr("Unable to remove directory!"));
@@ -302,6 +303,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
         {
           int res;
           res = remove(newPath.c_str());
+          dsyslog("[mpv] remove %s %d\n", newPath.c_str(), res);
           ShowDirectory(currentDir);
           if (res)
           {
