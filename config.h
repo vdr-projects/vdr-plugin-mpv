@@ -40,6 +40,7 @@ class cMpvPluginConfig
     int ShowMediaTitle;             // show title from media file instead of filename
     int ShowSubtitles;              // show subtitles
     int ExitAtEnd;                  // exit at the end
+    int ShowAfterStop;              // show after stop: 0 - black screen, 1 - filebrowser
     int SavePos;                    // save position on quit
     int SoftVol;                    // software volume
 

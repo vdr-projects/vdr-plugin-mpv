@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-mpv 0.0.4\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2024-01-07 14:59+1000\n"
+"POT-Creation-Date: 2024-01-28 01:08+1000\n"
 "PO-Revision-Date: 2020-01-12 01:04+1000\n"
 "Last-Translator: ua0lnj\n"
 "Language-Team: ua0lnj\n"
@@ -101,6 +101,9 @@ msgstr "Запись - нельзя проиграть!"
 msgid "mpv player plugin"
 msgstr "MPV плагин"
 
+msgid "Black screen"
+msgstr "Чёрный экран"
+
 msgid "Hide main menu entry"
 msgstr "Скрыть основное меню"
 
@@ -133,6 +136,9 @@ msgstr "Показ субтитров"
 
 msgid "Exit at the end"
 msgstr "Выход в конце"
+
+msgid "Show after stop"
+msgstr "Показать после остановки"
 
 msgid "Save position on quit"
 msgstr "Запомнить позицию"

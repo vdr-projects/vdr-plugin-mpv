@@ -129,15 +129,15 @@ void cMpvControl::ShowProgress(int playlist)
   DisplayReplay->SetMode(!Player->IsPaused(), true, Speed);
 
   if (playlist)
-{
-  DisplayReplay->SetCurrent(itoa(Player->CurrentListPos()));
-  DisplayReplay->SetTotal(itoa(Player->TotalListPos()));
-}
-else
-{
-  DisplayReplay->SetCurrent(IndexToHMSF(Player->CurrentPlayTime(), false, 1));
-  DisplayReplay->SetTotal(IndexToHMSF(Player->TotalPlayTime(), false, 1));
-}
+  {
+    DisplayReplay->SetCurrent(itoa(Player->CurrentListPos()));
+    DisplayReplay->SetTotal(itoa(Player->TotalListPos()));
+  }
+  else
+  {
+    DisplayReplay->SetCurrent(IndexToHMSF(Player->CurrentPlayTime(), false, 1));
+    DisplayReplay->SetTotal(IndexToHMSF(Player->TotalPlayTime(), false, 1));
+  }
   SetNeedsFastResponse(true);
   Skins.Flush();
 }
@@ -318,6 +318,11 @@ eOSState cMpvControl::ProcessKey(eKeys key)
           if (MpvPluginConfig->SavePos && !Player->NetworkPlay())
             Player->SavePosPlayer();
           Player->StopPlayer();
+          if (MpvPluginConfig->ShowAfterStop == 1)
+          {
+            MpvPluginConfig->ShowOptions = 0;
+            cRemote::CallPlugin("mpv");
+          }
         }
         else
         {

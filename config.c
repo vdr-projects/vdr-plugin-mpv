@@ -25,6 +25,7 @@ cMpvPluginConfig::cMpvPluginConfig()
   ShowMediaTitle = 0;
   ShowSubtitles = 0;
   ExitAtEnd = 1;
+  ShowAfterStop = 0;
   SavePos = 0;
   SoftVol = 0;
 
@@ -179,6 +180,8 @@ bool cMpvPluginConfig::SetupParse(const char *name, const char *value)
     ShowSubtitles = atoi(value);
   else if (!strcasecmp(name, "ExitAtEnd"))
     ExitAtEnd = atoi(value);
+  else if (!strcasecmp(name, "ShowAfterStop"))
+    ShowAfterStop = atoi(value);
   else if (!strcasecmp(name, "SavePos"))
     SavePos = atoi(value);
   else if (!strcasecmp(name, "SoftVol"))
