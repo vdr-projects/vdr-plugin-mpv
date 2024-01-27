@@ -318,6 +318,11 @@ eOSState cMpvControl::ProcessKey(eKeys key)
           if (MpvPluginConfig->SavePos && !Player->NetworkPlay())
             Player->SavePosPlayer();
           Player->StopPlayer();
+          if (MpvPluginConfig->ShowAfterStop == 1)
+          {
+            MpvPluginConfig->ShowOptions = 0;
+            cRemote::CallPlugin("mpv");
+          }
         }
         else
         {
