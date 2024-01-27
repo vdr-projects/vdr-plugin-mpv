@@ -168,6 +168,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
   string newPath = "";
   cMpvFilebrowserMenuItem *item;
   eOSState State;
+  int index = 0;
   switch (Key)
   {
     case kOk:
@@ -265,6 +266,7 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
       item = (cMpvFilebrowserMenuItem *) Get(Current());
       if (!item) break;
       newPath = item->Path() + "/" + item->Text();
+      index = item->Index();
       if (item->IsDirectory())
       {
         int res;
@@ -283,19 +285,19 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
             if (res)
             {
               Skins.Message(mtError, tr("Unable to remove directory!"));
-              ShowDirectory(currentDir);
             }
             else
             {
-              State = cOsdMenu::ProcessKey(kUp);
-              item = (cMpvFilebrowserMenuItem *) Get(Current());
-              if (!item) break;
-              currentItem = item->Text();
-              ShowDirectory(currentDir);
-              return State;
+              if (index)
+              {
+                item = (cMpvFilebrowserMenuItem *) Get(index-1);
+                if (!item) break;
+                currentItem = item->Text();
+              }
             }
           }
         }
+        ShowDirectory(currentDir);
       }
       else
       {
@@ -304,16 +306,20 @@ eOSState cMpvFilebrowser::ProcessKey(eKeys Key)
           int res;
           res = remove(newPath.c_str());
           dsyslog("[mpv] remove %s %d\n", newPath.c_str(), res);
-          ShowDirectory(currentDir);
           if (res)
           {
             Skins.Message(mtError, tr("Unable to remove file!"));
           }
           else
           {
-            State = cOsdMenu::ProcessKey(kUp);
-            return State;
+            if (index)
+            {
+              item = (cMpvFilebrowserMenuItem *) Get(index-1);
+              if (!item) break;
+              currentItem = item->Text();
+            }
           }
+          ShowDirectory(currentDir);
         }
       }
       return osContinue;
