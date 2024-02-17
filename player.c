@@ -585,7 +585,11 @@ void cMpvPlayer::PlayerStart()
   {
     check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts"));
     if (MpvPluginConfig->UseDtsHdPassthrough)
+    {
+      check_error(mpv_set_option_string(hMpv, "ad-lavc-downmix", "no"));
+      check_error(mpv_set_option_string(hMpv, "audio-channels", "7.1,5.1,stereo"));
       check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts,dts-hd,truehd,eac3"));
+    }
   }
   else
   {
