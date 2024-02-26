@@ -553,6 +553,11 @@ void cMpvPlayer::PlayerStart()
       check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
       check_error(mpv_set_option_string(hMpv, "vd-lavc-o", "deint=adaptive"));
     }
+    else if (strstr(MpvPluginConfig->HwDec.c_str(),"nvdec"))
+    {
+      check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
+      check_error(mpv_set_option_string(hMpv, "vf", "bwdif_cuda=1:-1:1"));
+    }
     else
     {
       check_error(mpv_set_option_string(hMpv, "deinterlace", "yes"));
