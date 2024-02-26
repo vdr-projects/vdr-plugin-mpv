@@ -553,6 +553,11 @@ void cMpvPlayer::PlayerStart()
       check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
       check_error(mpv_set_option_string(hMpv, "vd-lavc-o", "deint=adaptive"));
     }
+    else if (strstr(MpvPluginConfig->HwDec.c_str(),"nvdec"))
+    {
+      check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
+      check_error(mpv_set_option_string(hMpv, "vf", "bwdif_cuda=1:-1:1"));
+    }
     else
     {
       check_error(mpv_set_option_string(hMpv, "deinterlace", "yes"));
@@ -585,7 +590,11 @@ void cMpvPlayer::PlayerStart()
   {
     check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts"));
     if (MpvPluginConfig->UseDtsHdPassthrough)
+    {
+      check_error(mpv_set_option_string(hMpv, "ad-lavc-downmix", "no"));
+      check_error(mpv_set_option_string(hMpv, "audio-channels", "7.1,5.1,stereo"));
       check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts,dts-hd,truehd,eac3"));
+    }
   }
   else
   {
