@@ -60,6 +60,7 @@ class cMpvPluginConfig
     string X11Display;              // X11 display used for mpv
     string TitleOverride;           // title to display (ovveride used via service interface)
     string Geometry;                // X11 display geometry
+    string DRMdev;                  // DRM device
     int Windowed;                   // windowed mode, not fullscreen
 
     int ShowOptions;                // switch show menu options or filebrowser menu

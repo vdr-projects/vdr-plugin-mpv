@@ -105,6 +105,9 @@ Command line arguments
   You can set X11 geometry with this parameter [W[xH]][+-x+-y][/WS] or x:y.
   Resolution of OSD get from settings of output plugin (softhd*). OSD is scaled to video size.
 
+-e drm device
+  force set drm device (ex. /dev/dri/card0). Otherwise they will be tried /dev/dri/card1 and /dev/dri/card0.
+
 Plugin setup options
 --------------------
 
