@@ -43,7 +43,7 @@ volatile int cMpvPlayer::running = 0;
 cMpvPlayer *cMpvPlayer::PlayerHandle = NULL;
 std::string LocaleSave;
 int drm_ctx = 0;
-
+const char *drm_dev = NULL;
 Display *Dpy = NULL;
 xcb_connection_t *Connect = NULL;
 xcb_window_t VideoWindow = 0;
@@ -453,6 +453,25 @@ void cMpvPlayer::PlayerHideCursor()
 }
 
 #ifdef USE_DRM
+int cMpvPlayer::PlayerTryDRM()
+{
+  int fd;
+  if (strcmp(MpvPluginConfig->DRMdev.c_str(),"")) {
+    drm_dev = MpvPluginConfig->DRMdev.c_str();
+    return 1;
+  }
+  //card1 mean external card, card0 internal. First try external card
+  fd = open("/dev/dri/card1", O_RDWR);
+  if (fd < 0) {
+    fd = open("/dev/dri/card0", O_RDWR);
+    if (fd < 0) return 0;
+    else drm_dev = "/dev/dri/card0";
+  } else drm_dev = "/dev/dri/card1";
+
+  close(fd);
+  return 1;
+}
+
 void cMpvPlayer::PlayerGetDRM()
 {
   int fd, i;
@@ -520,6 +539,8 @@ void cMpvPlayer::PlayerStart()
   if (!strcmp(MpvPluginConfig->GpuCtx.c_str(),"drm") || !strcmp(MpvPluginConfig->VideoOut.c_str(),"drm"))
   {
     drm_ctx = 1;
+    if (!PlayerTryDRM()) return;
+    check_error(mpv_set_option_string(hMpv, "drm-device", drm_dev));
   }
   //no geometry with drm
   if (!drm_ctx) {

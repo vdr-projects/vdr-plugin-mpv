@@ -45,6 +45,7 @@ cMpvPluginConfig::cMpvPluginConfig()
   Geometry = "";
   Windowed = 0;
   ShowOptions = 0;
+  DRMdev = "";
 }
 
 vector<string> cMpvPluginConfig::ExplodeString(string Input)
@@ -73,7 +74,7 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
 
   for (;;)
   {
-    switch (getopt(argc, argv, "a:v:h:c:d:b:l:x:rm:swg:"))
+    switch (getopt(argc, argv, "a:v:h:c:d:b:l:x:rm:swg:e:"))
     {
       case 'a': // audio out
         AudioOut = optarg;
@@ -113,6 +114,9 @@ int cMpvPluginConfig::ProcessArgs(int argc, char *const argv[])
       continue;
       case 'g':
         Geometry = optarg;
+      continue;
+      case 'e':
+        DRMdev = optarg;
       continue;
       case EOF:
       break;

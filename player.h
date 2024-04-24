@@ -26,6 +26,7 @@ class cMpvPlayer:public cPlayer
     void SwitchOsdToMpv();
     void PlayerHideCursor();
     void PlayerGetDRM();
+    int PlayerTryDRM();
 
     string PlayFilename;              // file to play
     bool PlayShuffle;                 // shuffle playlist
