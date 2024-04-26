@@ -479,7 +479,7 @@ void cMpvPlayer::PlayerGetDRM()
   drmModeConnector *connector;
   drmModeModeInfo mode;
 
-  fd = open("/dev/dri/card0", O_RDWR);
+  fd = open(drm_dev, O_RDWR);
   if (fd < 0) return;
 
   resources = drmModeGetResources(fd);
