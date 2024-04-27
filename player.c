@@ -536,12 +536,14 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "vo", MpvPluginConfig->VideoOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()));
   check_error(mpv_set_option_string(hMpv, "gpu-context", MpvPluginConfig->GpuCtx.c_str()));
+#ifdef USE_DRM
   if (!strcmp(MpvPluginConfig->GpuCtx.c_str(),"drm") || !strcmp(MpvPluginConfig->VideoOut.c_str(),"drm"))
   {
     drm_ctx = 1;
     if (!PlayerTryDRM()) return;
     check_error(mpv_set_option_string(hMpv, "drm-device", drm_dev));
   }
+#endif
   //no geometry with drm
   if (!drm_ctx) {
     if (strcmp(MpvPluginConfig->Geometry.c_str(),""))
