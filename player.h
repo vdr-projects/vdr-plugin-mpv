@@ -44,6 +44,7 @@ class cMpvPlayer:public cPlayer
 
     // Player status variables
     int PlayerPaused;                 // player paused
+    int PlayerIdle;                   // player idle
     int PlayerRecord;                 // player record
     int PlayerDiscNav;                // discnav active
     int PlayerNumChapters;            // number of chapters
@@ -86,6 +87,7 @@ class cMpvPlayer:public cPlayer
     // functions to send commands to mpv
     void SendCommand(const char *cmd, ...);
     void PlayNew(string Filename);
+    void ResetIdle() { PlayerIdle = -1; }
     void Record(string Filename);
     void Seek(int Seconds); // seek n seconds
     void SetTimePos(int Seconds);
@@ -116,6 +118,7 @@ class cMpvPlayer:public cPlayer
 
     // functions to get different status information about the current playback
     int IsPaused() { return PlayerPaused; }
+    int IsIdle() { return PlayerIdle; }
     int IsRecord() { return PlayerRecord; }
     int DiscNavActive() { return PlayerDiscNav; }
     int NumChapters() { return PlayerNumChapters; }

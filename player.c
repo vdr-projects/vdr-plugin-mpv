@@ -193,6 +193,7 @@ void *cMpvPlayer::ObserverThread(void *handle)
 
       case MPV_EVENT_PLAYBACK_RESTART :
         Player->ChangeFrameRate(Player->CurrentFps()); // switching directly after the fps event causes black screen
+        Player->PlayerIdle = 0;
       break;
 
       case MPV_EVENT_LOG_MESSAGE :
@@ -220,6 +221,11 @@ void *cMpvPlayer::ObserverThread(void *handle)
 #endif
       break;
 
+      case MPV_EVENT_IDLE :
+        if (Player->PlayerIdle != -1)
+            Player->PlayerIdle = 1;
+      break;
+
       case MPV_EVENT_NONE :
       case MPV_EVENT_END_FILE :
 #if MPV_CLIENT_API_VERSION < MPV_MAKE_VERSION(2,0)
@@ -235,7 +241,6 @@ void *cMpvPlayer::ObserverThread(void *handle)
       case MPV_EVENT_SET_PROPERTY_REPLY :
       case MPV_EVENT_COMMAND_REPLY :
       case MPV_EVENT_START_FILE :
-      case MPV_EVENT_IDLE :
       case MPV_EVENT_TICK :
       case MPV_EVENT_CLIENT_MESSAGE :
       case MPV_EVENT_AUDIO_RECONFIG :
@@ -509,6 +514,7 @@ void cMpvPlayer::PlayerGetDRM()
 void cMpvPlayer::PlayerStart()
 {
   PlayerPaused = 0;
+  PlayerIdle = 0;
   PlayerSpeed = 1;
   PlayerDiscNav = 0;
 
