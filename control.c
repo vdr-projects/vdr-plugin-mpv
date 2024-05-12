@@ -167,6 +167,18 @@ eOSState cMpvControl::ProcessKey(eKeys key)
     cControl::Shutdown();
     return osEnd;
   }
+  //once detect the end of file playback
+  if (Player->IsIdle() > 0 && !Player->IsRecord() && !MpvPluginConfig->ExitAtEnd)
+  {
+    Hide();
+    Player->ResetIdle();
+    if (MpvPluginConfig->ShowAfterStop == 1)
+    {
+        MpvPluginConfig->ShowOptions = 0;
+        cRemote::CallPlugin("mpv");
+    }
+    return osContinue;
+  }
 
   if (timeSearchActive && key != kNone)
   {
@@ -317,6 +329,8 @@ eOSState cMpvControl::ProcessKey(eKeys key)
           Hide();
           if (MpvPluginConfig->SavePos && !Player->NetworkPlay())
             Player->SavePosPlayer();
+          //hack to disable idle when stopping manually
+          Player->ResetIdle();
           Player->StopPlayer();
           if (MpvPluginConfig->ShowAfterStop == 1)
           {
