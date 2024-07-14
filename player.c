@@ -9,6 +9,7 @@
 #include <locale.h>
 #include <string>
 #include <vector>
+#include <vdr/plugin.h>
 
 #include "player.h"
 #include "config.h"
@@ -49,6 +50,7 @@ xcb_connection_t *Connect = NULL;
 xcb_window_t VideoWindow = 0;
 xcb_pixmap_t pixmap = XCB_NONE;
 xcb_cursor_t cursor = XCB_NONE;
+int is_softhddevice = 0;
 
 #ifdef __cplusplus
 extern "C"
@@ -88,25 +90,30 @@ void *cMpvPlayer::XEventThread(void *handle)
         XWindowEvent(Dpy, VideoWindow, KeyPressMask|ButtonPressMask|StructureNotifyMask|SubstructureNotifyMask, &event);
         switch (event.type) {
 	  case ButtonPress:
-	    if (event.xbutton.button == 1) {
-		Time difftime = event.xbutton.time - clicktime;
-		if (difftime < 500) {
-		    check_error(mpv_set_option_string(Player->hMpv, "fullscreen", toggle ? "yes" : "no"));
-		    toggle = !toggle;
+	    if (is_softhddevice) {
+		if (event.xbutton.button == 1) {
+		    Time difftime = event.xbutton.time - clicktime;
+		    if (difftime < 500) {
+			check_error(mpv_set_option_string(Player->hMpv, "fullscreen", toggle ? "yes" : "no"));
+			toggle = !toggle;
+		    }
+		    clicktime = event.xbutton.time;
 		}
-		clicktime = event.xbutton.time;
-	    }
-	    else if (event.xbutton.button == 2) {
-		FeedKeyPress("XKeySym", "Ok", 0, 0, NULL);
-	    }
-	    else if (event.xbutton.button == 3) {
-		FeedKeyPress("XKeySym", "Menu", 0, 0, NULL);
-	    }
-	    if (event.xbutton.button == 4) {
-		FeedKeyPress("XKeySym", "Volume+", 0, 0, NULL);
-	    }
-	    if (event.xbutton.button == 5) {
-		FeedKeyPress("XKeySym", "Volume-", 0, 0, NULL);
+		else if (event.xbutton.button == 2) {
+		    FeedKeyPress("XKeySym", "Ok", 0, 0, NULL);
+		}
+		else if (event.xbutton.button == 3) {
+		    FeedKeyPress("XKeySym", "Menu", 0, 0, NULL);
+		}
+		if (event.xbutton.button == 4) {
+		    FeedKeyPress("XKeySym", "Volume+", 0, 0, NULL);
+		}
+		if (event.xbutton.button == 5) {
+		    FeedKeyPress("XKeySym", "Volume-", 0, 0, NULL);
+		}
+	    } else {
+		check_error(mpv_set_option_string(Player->hMpv, "fullscreen", toggle ? "yes" : "no"));
+		toggle = !toggle;
 	    }
 	    break;
 	  case ButtonRelease:
@@ -680,6 +687,10 @@ void cMpvPlayer::PlayerStart()
   {
     pthread_create(&XEventThreadHandle, NULL, XEventThread, this);
     RemoteStart();
+  }
+  if (cPluginManager::GetPlugin("softhddevice"))
+  {
+    is_softhddevice = 1;
   }
 }
 
