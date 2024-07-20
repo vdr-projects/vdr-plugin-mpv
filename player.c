@@ -9,6 +9,7 @@
 #include <locale.h>
 #include <string>
 #include <vector>
+#include <vdr/plugin.h>
 
 #include "player.h"
 #include "config.h"
@@ -49,6 +50,7 @@ xcb_connection_t *Connect = NULL;
 xcb_window_t VideoWindow = 0;
 xcb_pixmap_t pixmap = XCB_NONE;
 xcb_cursor_t cursor = XCB_NONE;
+int is_softhddevice = 0;
 
 #ifdef __cplusplus
 extern "C"
@@ -70,6 +72,26 @@ static inline void check_error(int status)
   }
 }
 
+void set_deinterlace(mpv_handle *h)
+{
+    if (strstr(MpvPluginConfig->HwDec.c_str(),"vaapi"))
+    {
+      check_error(mpv_set_option_string(h, "vf", "vavpp=deint=auto"));
+    }
+    else if (strstr(MpvPluginConfig->HwDec.c_str(),"vdpau"))
+    {
+      check_error(mpv_set_option_string(h, "vf", "vdpaupp=deint=yes:deint-mode=temporal-spatial"));
+    }
+    else if (strstr(MpvPluginConfig->HwDec.c_str(),"cuda"))
+    {
+      check_error(mpv_set_option_string(h, "vd-lavc-o", "deint=adaptive"));
+    }
+    else
+    {
+      check_error(mpv_set_option_string(h, "deinterlace", "yes"));
+    }
+}
+
 void *cMpvPlayer::XEventThread(void *handle)
 {
   XEvent event;
@@ -88,25 +110,30 @@ void *cMpvPlayer::XEventThread(void *handle)
         XWindowEvent(Dpy, VideoWindow, KeyPressMask|ButtonPressMask|StructureNotifyMask|SubstructureNotifyMask, &event);
         switch (event.type) {
 	  case ButtonPress:
-	    if (event.xbutton.button == 1) {
-		Time difftime = event.xbutton.time - clicktime;
-		if (difftime < 500) {
-		    check_error(mpv_set_option_string(Player->hMpv, "fullscreen", toggle ? "yes" : "no"));
-		    toggle = !toggle;
+	    if (is_softhddevice) {
+		if (event.xbutton.button == 1) {
+		    Time difftime = event.xbutton.time - clicktime;
+		    if (difftime < 500) {
+			check_error(mpv_set_option_string(Player->hMpv, "fullscreen", toggle ? "yes" : "no"));
+			toggle = !toggle;
+		    }
+		    clicktime = event.xbutton.time;
 		}
-		clicktime = event.xbutton.time;
-	    }
-	    else if (event.xbutton.button == 2) {
-		FeedKeyPress("XKeySym", "Ok", 0, 0, NULL);
-	    }
-	    else if (event.xbutton.button == 3) {
-		FeedKeyPress("XKeySym", "Menu", 0, 0, NULL);
-	    }
-	    if (event.xbutton.button == 4) {
-		FeedKeyPress("XKeySym", "Volume+", 0, 0, NULL);
-	    }
-	    if (event.xbutton.button == 5) {
-		FeedKeyPress("XKeySym", "Volume-", 0, 0, NULL);
+		else if (event.xbutton.button == 2) {
+		    FeedKeyPress("XKeySym", "Ok", 0, 0, NULL);
+		}
+		else if (event.xbutton.button == 3) {
+		    FeedKeyPress("XKeySym", "Menu", 0, 0, NULL);
+		}
+		if (event.xbutton.button == 4) {
+		    FeedKeyPress("XKeySym", "Volume+", 0, 0, NULL);
+		}
+		if (event.xbutton.button == 5) {
+		    FeedKeyPress("XKeySym", "Volume-", 0, 0, NULL);
+		}
+	    } else {
+		check_error(mpv_set_option_string(Player->hMpv, "fullscreen", toggle ? "yes" : "no"));
+		toggle = !toggle;
 	    }
 	    break;
 	  case ButtonRelease:
@@ -194,6 +221,7 @@ void *cMpvPlayer::ObserverThread(void *handle)
       case MPV_EVENT_PLAYBACK_RESTART :
         Player->ChangeFrameRate(Player->CurrentFps()); // switching directly after the fps event causes black screen
         Player->PlayerIdle = 0;
+        if (MpvPluginConfig->UseDeinterlace && !Player->Image()) set_deinterlace(Player->hMpv);
       break;
 
       case MPV_EVENT_LOG_MESSAGE :
@@ -517,6 +545,7 @@ void cMpvPlayer::PlayerStart()
   PlayerIdle = 0;
   PlayerSpeed = 1;
   PlayerDiscNav = 0;
+  isImage = 0;
 
   SwitchOsdToMpv();
 
@@ -542,6 +571,7 @@ void cMpvPlayer::PlayerStart()
   check_error(mpv_set_option_string(hMpv, "vo", MpvPluginConfig->VideoOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()));
   check_error(mpv_set_option_string(hMpv, "gpu-context", MpvPluginConfig->GpuCtx.c_str()));
+  check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
 #ifdef USE_DRM
   if (!strcmp(MpvPluginConfig->GpuCtx.c_str(),"drm") || !strcmp(MpvPluginConfig->VideoOut.c_str(),"drm"))
   {
@@ -567,30 +597,7 @@ void cMpvPlayer::PlayerStart()
   }
   if (MpvPluginConfig->UseDeinterlace)
   {
-    if (strstr(MpvPluginConfig->HwDec.c_str(),"vaapi"))
-    {
-      check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
-      check_error(mpv_set_option_string(hMpv, "vf", "vavpp=deint=auto"));
-    }
-    else if (strstr(MpvPluginConfig->HwDec.c_str(),"vdpau"))
-    {
-      check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
-      check_error(mpv_set_option_string(hMpv, "vf", "vdpaupp=deint=yes:deint-mode=temporal-spatial"));
-    }
-    else if (strstr(MpvPluginConfig->HwDec.c_str(),"cuda"))
-    {
-      check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
-      check_error(mpv_set_option_string(hMpv, "vd-lavc-o", "deint=adaptive"));
-    }
-    else if (strstr(MpvPluginConfig->HwDec.c_str(),"nvdec"))
-    {
-      check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
-      check_error(mpv_set_option_string(hMpv, "deinterlace", "yes"));
-    }
-    else
-    {
-      check_error(mpv_set_option_string(hMpv, "deinterlace", "yes"));
-    }
+    set_deinterlace(hMpv);
   }
   check_error(mpv_set_option_string(hMpv, "audio-device", MpvPluginConfig->AudioOut.c_str()));
   check_error(mpv_set_option_string(hMpv, "slang", MpvPluginConfig->Languages.c_str()));
@@ -680,6 +687,10 @@ void cMpvPlayer::PlayerStart()
   {
     pthread_create(&XEventThreadHandle, NULL, XEventThread, this);
     RemoteStart();
+  }
+  if (cPluginManager::GetPlugin("softhddevice"))
+  {
+    is_softhddevice = 1;
   }
 }
 
@@ -820,6 +831,11 @@ void cMpvPlayer::HandleTracksChange()
         TrackLanguage = Node.u.list->values[i].u.list->values[j].u.string;
       if (strcmp(Node.u.list->values[i].u.list->keys[j], "title") == 0)
         TrackTitle = Node.u.list->values[i].u.list->values[j].u.string;
+      if (strcmp(Node.u.list->values[i].u.list->keys[j], "image") == 0)
+      {
+        isImage = Node.u.list->values[i].u.list->values[j].u.flag;
+        if (isImage) check_error(mpv_set_option_string(hMpv, "deinterlace", "no"));
+      }
     }
     if (TrackType == "audio")
     {
