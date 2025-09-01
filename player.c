@@ -65,11 +65,11 @@ extern void RemoteStop();
 #endif
 
 // check mpv errors and send them to log
-static inline void check_error(int status)
+static inline void check_error(int status, string opt = "")
 {
   if (status < 0)
   {
-    esyslog("[mpv] API error: %s\n", mpv_error_string(status));
+    esyslog("[mpv] API error: %s %s\n", mpv_error_string(status), opt.c_str());
   }
 }
 
@@ -77,19 +77,19 @@ void set_deinterlace(mpv_handle *h)
 {
     if (strstr(MpvPluginConfig->HwDec.c_str(),"vaapi"))
     {
-      check_error(mpv_set_option_string(h, "vf", "vavpp=deint=auto"));
+      check_error(mpv_set_option_string(h, "vf", "vavpp=deint=auto"), "vaapi vf");
     }
     else if (strstr(MpvPluginConfig->HwDec.c_str(),"vdpau"))
     {
-      check_error(mpv_set_option_string(h, "vf", "vdpaupp=deint=yes:deint-mode=temporal-spatial"));
+      check_error(mpv_set_option_string(h, "vf", "vdpaupp=deint=yes:deint-mode=temporal-spatial"), "vdpau vf");
     }
     else if (strstr(MpvPluginConfig->HwDec.c_str(),"cuda"))
     {
-      check_error(mpv_set_option_string(h, "vd-lavc-o", "deint=adaptive"));
+      check_error(mpv_set_option_string(h, "vd-lavc-o", "deint=adaptive"), "vd-lavc-o");
     }
     else
     {
-      check_error(mpv_set_option_string(h, "deinterlace", "yes"));
+      check_error(mpv_set_option_string(h, "deinterlace", "auto"), "deinterlace");
     }
 }
 
@@ -115,7 +115,7 @@ void *cMpvPlayer::XEventThread(void *handle)
 		if (event.xbutton.button == 1) {
 		    Time difftime = event.xbutton.time - clicktime;
 		    if (difftime < 500) {
-			check_error(mpv_set_option_string(Player->hMpv, "fullscreen", toggle ? "yes" : "no"));
+			check_error(mpv_set_option_string(Player->hMpv, "fullscreen", toggle ? "yes" : "no"), "fullscreen");
 			toggle = !toggle;
 		    }
 		    clicktime = event.xbutton.time;
@@ -133,7 +133,7 @@ void *cMpvPlayer::XEventThread(void *handle)
 		    FeedKeyPress("XKeySym", "Volume-", 0, 0, NULL);
 		}
 	    } else {
-		check_error(mpv_set_option_string(Player->hMpv, "fullscreen", toggle ? "yes" : "no"));
+		check_error(mpv_set_option_string(Player->hMpv, "fullscreen", toggle ? "yes" : "no"), "fullscreen");
 		toggle = !toggle;
 	    }
 	    break;
@@ -322,10 +322,18 @@ void cMpvPlayer::SetSubtitleTrack(eTrackType Type, const tTrackId *TrackId)
 {
   if (Type == ttNone)
   {
-    check_error(mpv_set_option_string(hMpv, "sub-forced-only", "yes"));
+#if MPV_CLIENT_API_VERSION < MPV_MAKE_VERSION(2,2)
+    check_error(mpv_set_option_string(hMpv, "sub-forced-only", "yes"), "sub-forced-only");
+#else
+    check_error(mpv_set_option_string(hMpv, "sub-forced-events-only", "yes"), "sub-forced-events-only");
+#endif
     return;
   }
-  check_error(mpv_set_option_string(hMpv, "sub-forced-only", "no"));
+#if MPV_CLIENT_API_VERSION < MPV_MAKE_VERSION(2,2)
+  check_error(mpv_set_option_string(hMpv, "sub-forced-only", "no"), "sub-forced-only");
+#else
+  check_error(mpv_set_option_string(hMpv, "sub-forced-events-only", "no"), "sub-forced-events-only");
+#endif
   SetSubtitle(TrackId->id);
 }
 
@@ -362,7 +370,7 @@ void cMpvPlayer::PlayerGetWindow(string need, xcb_connection_t **connect, xcb_wi
   xcb_query_tree_cookie_t  cookie;
   xcb_query_tree_reply_t *reply;
   xcb_window_t *child;
-  xcb_window_t parent = 0;
+  xcb_window_t parent1 = 0, parent2 = 0;
 
   if (!Dpy)
     Dpy = XOpenDisplay(MpvPluginConfig->X11Display.c_str());
@@ -396,41 +404,76 @@ void cMpvPlayer::PlayerGetWindow(string need, xcb_connection_t **connect, xcb_wi
       //get children of root
       child = xcb_query_tree_children(reply);
 
-      xcb_query_tree_cookie_t  c_cookie;
-      xcb_query_tree_reply_t *c_reply;
-      xcb_window_t *c_child = NULL;
-      int c_len;
+      xcb_query_tree_cookie_t  cookie1, cookie2;
+      xcb_query_tree_reply_t *reply1, *reply2;
+      xcb_window_t *child1 = NULL, *child2 = NULL;
+      int len1, len2;
 
+      //Gnome have 1 child, KDE have 2 child
       for (i = 0; i < len; i++) {
-        //query child of child
-        c_cookie = xcb_query_tree(*connect,child[i]);
-        c_reply = xcb_query_tree_reply(*connect, c_cookie, 0);
-        c_len = xcb_query_tree_children_length(c_reply);
+        //query child of child 0
+        cookie1 = xcb_query_tree(*connect,child[i]);
+        reply1 = xcb_query_tree_reply(*connect, cookie1, 0);
+        len1 = xcb_query_tree_children_length(reply1);
 
-        if (c_len) {
-          //get children of child
-          c_child = xcb_query_tree_children(c_reply);
+        if (len1) {
+          //get children of child 0
+          child1 = xcb_query_tree_children(reply1);
         }
 
-        for (int o = 0; o < (c_len ? c_len : 1); o++){
-          //get child property
-          procookie = xcb_get_property(*connect, 0, c_len ? c_child[o] : child[i], property, XCB_GET_PROPERTY_TYPE_ANY, 0, 1000);
-          if (proreply = xcb_get_property_reply(*connect, procookie, NULL)) {
-            if (xcb_get_property_value_length(proreply) > 0) {
-              string name = (char*)xcb_get_property_value(proreply);
-              if (name.find(need) != string::npos) {
-                  if (!c_len) window = child[i];
+        for (int p = 0; p < len1; p++) {
+          //query child of child 1
+          cookie2 = xcb_query_tree(*connect,child1[p]);
+          reply2 = xcb_query_tree_reply(*connect, cookie2, 0);
+          len2 = xcb_query_tree_children_length(reply2);
+
+          if (len2) {
+            //get children of child 1
+            child2 = xcb_query_tree_children(reply2);
+            parent1 = child[i];
+          } else {
+
+            //get child 1 property
+            procookie = xcb_get_property(*connect, 0, len1 ? child1[p] : child[i], property, XCB_GET_PROPERTY_TYPE_ANY, 0, 1000);
+            if (proreply = xcb_get_property_reply(*connect, procookie, NULL)) {
+              if (xcb_get_property_value_length(proreply) > 0) {
+                string name = (char*)xcb_get_property_value(proreply);
+                if (name.find(need) != string::npos) {
+                  if (!len1) window = child[i];
                   else {
-                    window = c_child[o];
-                    parent = child[i];
+                    window = child1[p];
+                    parent1 = child[i];
                   }
                   break;
+                }
               }
+              free(proreply);
+            }
+            if (window) break;
+          }
+
+          for (int o = 0; o < (len2 ? len2 : 1); o++){
+            //get child property
+            procookie = xcb_get_property(*connect, 0, len2 ? child2[o] : child1[p], property, XCB_GET_PROPERTY_TYPE_ANY, 0, 1000);
+            if (proreply = xcb_get_property_reply(*connect, procookie, NULL)) {
+              if (xcb_get_property_value_length(proreply) > 0) {
+                string name = (char*)xcb_get_property_value(proreply);
+                if (name.find(need) != string::npos) {
+                  if (!len2) window = child1[p];
+                  else {
+                    window = child2[o];
+                    parent2 = child1[p];
+                  }
+                  break;
+                }
+              }
+              free(proreply);
             }
           }
-          free(proreply);
+          free(reply2);
         }
-        free(c_reply);
+        free(reply1);
+        if (window) break;
       }
     }
     free(reply);
@@ -467,23 +510,38 @@ void cMpvPlayer::PlayerGetWindow(string need, xcb_connection_t **connect, xcb_wi
         if (areply) {
           NetWmStateFullscreen = areply->atom;
           free(areply);
-
-          if(((xcb_atom_t *)xcb_get_property_value(proreply))[0] == NetWmStateFullscreen)
-            VideoFullscreen = 1;
-          else
-            VideoFullscreen = 0;
+          VideoFullscreen = 0;
+          for (uint32_t i = 0; i < proreply->value_len; i++) {
+            if (((xcb_atom_t *)xcb_get_property_value(proreply))[i] == NetWmStateFullscreen) {
+              VideoFullscreen = 1;
+              break;
+            }
+          }
           free(proreply);
         }
       }
     }
   }
 
-  if (parent) {
+  if (parent1) {
     //get geometry
     xcb_get_geometry_cookie_t geocookie;
     xcb_get_geometry_reply_t *georeply;
 
-    geocookie = xcb_get_geometry(*connect, parent);
+    geocookie = xcb_get_geometry(*connect, parent1);
+    georeply = xcb_get_geometry_reply(*connect, geocookie, NULL);
+    if (georeply) {
+      x += georeply->x;
+      y += georeply->y;
+      free(georeply);
+    }
+  }
+  if (parent2) {
+    //get geometry
+    xcb_get_geometry_cookie_t geocookie;
+    xcb_get_geometry_reply_t *georeply;
+
+    geocookie = xcb_get_geometry(*connect, parent2);
     georeply = xcb_get_geometry_reply(*connect, geocookie, NULL);
     if (georeply) {
       x += georeply->x;
@@ -606,16 +664,17 @@ void cMpvPlayer::PlayerStart()
   int64_t osdlevel = 0;
   string config_dir = PLGRESDIR;
 
-  check_error(mpv_set_option_string(hMpv, "vo", MpvPluginConfig->VideoOut.c_str()));
-  check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()));
-  check_error(mpv_set_option_string(hMpv, "gpu-context", MpvPluginConfig->GpuCtx.c_str()));
-  check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"));
+  check_error(mpv_set_option_string(hMpv, "vo", MpvPluginConfig->VideoOut.c_str()), "vo");
+  check_error(mpv_set_option_string(hMpv, "hwdec", MpvPluginConfig->HwDec.c_str()), "hwdec");
+  check_error(mpv_set_option_string(hMpv, "gpu-context", MpvPluginConfig->GpuCtx.c_str()), "gpu-context");
+  check_error(mpv_set_option_string(hMpv, "hwdec-codecs", "all"), "hwdec-codecs");
 #ifdef USE_DRM
   if (!strcmp(MpvPluginConfig->GpuCtx.c_str(),"drm") || !strcmp(MpvPluginConfig->VideoOut.c_str(),"drm"))
   {
     drm_ctx = 1;
     if (!PlayerTryDRM()) return;
-    check_error(mpv_set_option_string(hMpv, "drm-device", drm_dev));
+    check_error(mpv_set_option_string(hMpv, "drm-device", drm_dev), "drm-device");
+    check_error(mpv_set_option_string(hMpv, "target-colorspace-hint", "auto"), "target-colorspace-hint");
   }
 #endif
   //window geometry with x11, drm-mode with drm
@@ -623,15 +682,15 @@ void cMpvPlayer::PlayerStart()
   {
     if (strcmp(MpvPluginConfig->Geometry.c_str(),""))
     {
-      check_error(mpv_set_option_string(hMpv, "geometry", MpvPluginConfig->Geometry.c_str()));
+      check_error(mpv_set_option_string(hMpv, "geometry", MpvPluginConfig->Geometry.c_str()), "geometry");
     } else if (windowWidth && windowHeight) {
       char geo[25];
       sprintf(geo, "%dx%d+%d+%d", windowWidth, windowHeight, windowX, windowY);
-      check_error(mpv_set_option_string(hMpv, "geometry", geo));
+      check_error(mpv_set_option_string(hMpv, "geometry", geo), "geometry");
     }
     if (!MpvPluginConfig->Windowed || VideoFullscreen)
     {
-      check_error(mpv_set_option_string(hMpv, "fullscreen", "yes"));
+      check_error(mpv_set_option_string(hMpv, "fullscreen", "yes"), "fullscreen");
     }
   }
 #ifdef USE_DRM
@@ -639,7 +698,7 @@ void cMpvPlayer::PlayerStart()
   {
     if (strcmp(MpvPluginConfig->Geometry.c_str(),""))
     {
-      check_error(mpv_set_option_string(hMpv, "drm-mode", MpvPluginConfig->Geometry.c_str()));
+      check_error(mpv_set_option_string(hMpv, "drm-mode", MpvPluginConfig->Geometry.c_str()), "drm-mode");
     }
   }
 #endif
@@ -647,63 +706,63 @@ void cMpvPlayer::PlayerStart()
   {
     set_deinterlace(hMpv);
   }
-  check_error(mpv_set_option_string(hMpv, "audio-device", MpvPluginConfig->AudioOut.c_str()));
-  check_error(mpv_set_option_string(hMpv, "slang", MpvPluginConfig->Languages.c_str()));
-  check_error(mpv_set_option_string(hMpv, "alang", MpvPluginConfig->Languages.c_str()));
-  check_error(mpv_set_option_string(hMpv, "cache", "no")); // video stutters if enabled
-  check_error(mpv_set_option_string(hMpv, "sub-visibility", MpvPluginConfig->ShowSubtitles ? "yes" : "no"));
+  check_error(mpv_set_option_string(hMpv, "audio-device", MpvPluginConfig->AudioOut.c_str()), "audio-device");
+  check_error(mpv_set_option_string(hMpv, "slang", MpvPluginConfig->Languages.c_str()), "slang");
+  check_error(mpv_set_option_string(hMpv, "alang", MpvPluginConfig->Languages.c_str()), "alang");
+  check_error(mpv_set_option_string(hMpv, "cache", "no"), "cache"); // video stutters if enabled
+  check_error(mpv_set_option_string(hMpv, "sub-visibility", MpvPluginConfig->ShowSubtitles ? "yes" : "no"), "sub-visibility");
 #if MPV_CLIENT_API_VERSION < MPV_MAKE_VERSION(2,2)
-  check_error(mpv_set_option_string(hMpv, "sub-forced-only", "yes"));
+  check_error(mpv_set_option_string(hMpv, "sub-forced-only", "yes"), "sub-forced-only");
 #else
-  check_error(mpv_set_option_string(hMpv, "sub-forced-events-only", "yes"));
+  check_error(mpv_set_option_string(hMpv, "sub-forced-events-only", "yes"), "sub-forced-events-only");
 #endif
-  check_error(mpv_set_option_string(hMpv, "sub-auto", "all"));
-  check_error(mpv_set_option_string(hMpv, "hr-seek", "yes"));
-  check_error(mpv_set_option_string(hMpv, "write-filename-in-watch-later-config", "yes"));
-  check_error(mpv_set_option_string(hMpv, "config-dir", config_dir.c_str()));
-  check_error(mpv_set_option_string(hMpv, "config", "yes"));
-  check_error(mpv_set_option_string(hMpv, "ontop", "yes"));
-  check_error(mpv_set_option_string(hMpv, "cursor-autohide", "always"));
-  check_error(mpv_set_option_string(hMpv, "input-cursor", "no"));
-  check_error(mpv_set_option_string(hMpv, "stop-playback-on-init-failure", "no"));
-  check_error(mpv_set_option_string(hMpv, "idle", MpvPluginConfig->ExitAtEnd ? "once" : "yes"));
-  check_error(mpv_set_option_string(hMpv, "force-window", "immediate"));
-  check_error(mpv_set_option_string(hMpv, "image-display-duration", "inf"));
-  check_error(mpv_set_option(hMpv, "osd-level", MPV_FORMAT_INT64, &osdlevel));
+  check_error(mpv_set_option_string(hMpv, "sub-auto", "all"), "sub-auto");
+  check_error(mpv_set_option_string(hMpv, "hr-seek", "yes"), "hr-seek");
+  check_error(mpv_set_option_string(hMpv, "write-filename-in-watch-later-config", "yes"), "write-filename-in-watch-later-config");
+  check_error(mpv_set_option_string(hMpv, "config-dir", config_dir.c_str()), "config-dir");
+  check_error(mpv_set_option_string(hMpv, "config", "yes"), "config");
+  check_error(mpv_set_option_string(hMpv, "ontop", "yes"), "ontop");
+  check_error(mpv_set_option_string(hMpv, "cursor-autohide", "always"), "cursor-autohide");
+  check_error(mpv_set_option_string(hMpv, "input-cursor", "no"), "input-cursor");
+  check_error(mpv_set_option_string(hMpv, "stop-playback-on-init-failure", "no"), "stop-playback-on-init-failure");
+  check_error(mpv_set_option_string(hMpv, "idle", MpvPluginConfig->ExitAtEnd ? "once" : "yes"), "idle");
+  check_error(mpv_set_option_string(hMpv, "force-window", "immediate"), "force-window");
+  check_error(mpv_set_option_string(hMpv, "image-display-duration", "inf"), "image-display-duration");
+  check_error(mpv_set_option(hMpv, "osd-level", MPV_FORMAT_INT64, &osdlevel), "osd-level");
 #ifdef DEBUG
-  check_error(mpv_set_option_string(hMpv, "log-file", "/var/log/mpv"));
+  check_error(mpv_set_option_string(hMpv, "log-file", "/var/log/mpv"), "log-file");
 #endif
   if (MpvPluginConfig->UsePassthrough)
   {
-    check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts"));
+    check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts"), "audio-spdif");
     if (MpvPluginConfig->UseDtsHdPassthrough)
     {
-      check_error(mpv_set_option_string(hMpv, "ad-lavc-downmix", "no"));
-      check_error(mpv_set_option_string(hMpv, "audio-channels", "7.1,5.1,stereo"));
-      check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts,dts-hd,truehd,eac3"));
+      check_error(mpv_set_option_string(hMpv, "ad-lavc-downmix", "no"), "ad-lavc-downmix");
+      check_error(mpv_set_option_string(hMpv, "audio-channels", "7.1,5.1,stereo"), "audio-channels");
+      check_error(mpv_set_option_string(hMpv, "audio-spdif", "ac3,dts,dts-hd,truehd,eac3"), "audio-spdif");
     }
   }
   else
   {
     int64_t StartVolume = cDevice::CurrentVolume() / 2.55;
     if (MpvPluginConfig->SoftVol)
-      check_error(mpv_set_option(hMpv, "volume", MPV_FORMAT_INT64, &StartVolume));
+      check_error(mpv_set_option(hMpv, "volume", MPV_FORMAT_INT64, &StartVolume), "volume");
     else
-      mpv_set_property_string(hMpv, "ao-volume", std::to_string(StartVolume).c_str());
+      check_error(mpv_set_property_string(hMpv, "ao-volume", std::to_string(StartVolume).c_str()), "ao-volume");
     if (MpvPluginConfig->StereoDownmix)
     {
-      check_error(mpv_set_option_string(hMpv, "ad-lavc-downmix", "yes"));
-      check_error(mpv_set_option_string(hMpv, "audio-channels", "stereo"));
+      check_error(mpv_set_option_string(hMpv, "ad-lavc-downmix", "yes"), "ad-lavc-downmix");
+      check_error(mpv_set_option_string(hMpv, "audio-channels", "stereo"), "audio-channels");
     }
     else
-      check_error(mpv_set_option_string(hMpv, "audio-channels", "7.1,5.1,stereo"));
+      check_error(mpv_set_option_string(hMpv, "audio-channels", "7.1,5.1,stereo"), "audio-channels");
   }
 
   if (PlayShuffle && IsPlaylist(PlayFilename))
-    check_error(mpv_set_option_string(hMpv, "shuffle", "yes"));
+    check_error(mpv_set_option_string(hMpv, "shuffle", "yes"), "shuffle");
 
   if (MpvPluginConfig->NoScripts)
-    check_error(mpv_set_option_string(hMpv, "load-scripts", "no"));
+    check_error(mpv_set_option_string(hMpv, "load-scripts", "no"), "load-scripts");
 
 #ifdef DEBUG
   mpv_request_log_messages(hMpv, "info");
@@ -885,7 +944,7 @@ void cMpvPlayer::HandleTracksChange()
       if (strcmp(Node.u.list->values[i].u.list->keys[j], "image") == 0)
       {
         isImage = Node.u.list->values[i].u.list->values[j].u.flag;
-        if (isImage) check_error(mpv_set_option_string(hMpv, "deinterlace", "no"));
+        if (isImage) check_error(mpv_set_option_string(hMpv, "deinterlace", "no"), "deinterlace");
       }
     }
     if (TrackType == "audio")
@@ -1064,13 +1123,13 @@ void cMpvPlayer::ScaleVideo(int x, int y, int width, int height)
 
   if(!x && !y && !width && !height)
   {
-    mpv_set_property_string(hMpv, "video-pan-x", "0.0");
-    mpv_set_property_string(hMpv, "video-pan-y", "0.0");
+    check_error(mpv_set_property_string(hMpv, "video-pan-x", "0.0"), "video-pan-x");
+    check_error(mpv_set_property_string(hMpv, "video-pan-y", "0.0"), "video-pan-y");
 #if MPV_CLIENT_API_VERSION >= MPV_MAKE_VERSION(2,0)
-    mpv_set_property_string(hMpv, "video-scale-x", "1.0");
-    mpv_set_property_string(hMpv, "video-scale-y", "1.0");
+    check_error(mpv_set_property_string(hMpv, "video-scale-x", "1.0"), "video-scale-x");
+    check_error(mpv_set_property_string(hMpv, "video-scale-y", "1.0"), "video-scale-y");
 #else
-    mpv_set_property_string(hMpv, "video-zoom", "0");
+    check_error(mpv_set_property_string(hMpv, "video-zoom", "0"), "video-zoom");
 #endif
   }
   else
@@ -1079,24 +1138,24 @@ void cMpvPlayer::ScaleVideo(int x, int y, int width, int height)
 #if MPV_CLIENT_API_VERSION >= MPV_MAKE_VERSION(2,0)
     err = snprintf (buffer, sizeof(buffer), "%d:%d", width, osdWidth);
     if (err > 0)
-      mpv_set_property_string(hMpv, "video-scale-x", buffer);
+      check_error(mpv_set_property_string(hMpv, "video-scale-x", buffer), "video-scale-x");
     err = snprintf (buffer, sizeof(buffer), "%d:%d", height, osdHeight);
     if (err > 0)
-      mpv_set_property_string(hMpv, "video-scale-y", buffer);
+      check_error(mpv_set_property_string(hMpv, "video-scale-y", buffer), "video-scale-y");
 #else
     if (osdWidth > width)
       err = snprintf (buffer, sizeof(buffer), "-%f", ((float)osdWidth/width)/2.0);
     else
       err = snprintf (buffer, sizeof(buffer), "%f", ((float)width/osdWidth)/2.0);
     if (err > 0)
-      mpv_set_property_string(hMpv, "video-zoom", buffer);
+      check_error(mpv_set_property_string(hMpv, "video-zoom", buffer), "video-zoom");
 #endif
     err = snprintf (buffer, sizeof(buffer), "%d:%d", x - (int)((osdWidth - width) * Aspect / 3.54), width);
     if (err > 0)
-      mpv_set_property_string(hMpv, "video-pan-x", buffer);
+      check_error(mpv_set_property_string(hMpv, "video-pan-x", buffer), "video-pan-x");
     err = snprintf (buffer, sizeof(buffer), "%d:%d", y - (osdHeight - height) / 2,height);
     if (err > 0)
-      mpv_set_property_string(hMpv, "video-pan-y", buffer);
+      check_error(mpv_set_property_string(hMpv, "video-pan-y", buffer), "video-pan-y");
   }
 }
 
@@ -1153,7 +1212,7 @@ void cMpvPlayer::PlayNew(string Filename)
 
 void cMpvPlayer::Record(string Filename)
 {
-  mpv_set_option_string(hMpv, "stream-record", Filename.c_str());
+  check_error(mpv_set_option_string(hMpv, "stream-record", Filename.c_str()), "stream-record");
   if (Filename == "")
     PlayerRecord = 0;
   else
@@ -1278,5 +1337,5 @@ void cMpvPlayer::SetVolume(int Volume)
   if (MpvPluginConfig->SoftVol)
     SendCommand("set volume %d\n", Volume);
   else if (PlayerIsRunning())
-    mpv_set_property_string(hMpv, "ao-volume", std::to_string(Volume).c_str());
+    check_error(mpv_set_property_string(hMpv, "ao-volume", std::to_string(Volume).c_str()), "ao-volume");
 }
